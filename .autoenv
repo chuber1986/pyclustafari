@@ -1,0 +1,20 @@
+# Automation file that setup the the project environment
+# when the project directory is entered in the console.
+#
+# To make this work the ~/.bashrc file must contain the
+# following lines:
+#
+# function cd() {
+#   builtin cd "$@"
+#
+#   ## If .autoenv folder is found then load it
+#   if [[ -f ./.autoenv ]] ; then
+#     source ./.autoenv
+#   fi
+# }
+
+# Load .env file
+source .env
+
+# Load conda environments
+conda activate slurmlib
