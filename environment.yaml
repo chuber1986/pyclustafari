@@ -5,7 +5,7 @@ channels:
 dependencies:
   - mamba>=1.0.0
   - conda-lock>=1.2.1
-  - python>=3.8
+  - python>=3.11
   - cookiecutter>=2.1.1
   - pip>=22.2.20
   - pip:
@@ -27,3 +27,6 @@ dependencies:
     - mkdocs-material>=8.5.8
     - mkdocstrings[python]>=0.19.0
     - mkdocs-autorefs>=0.4.1
+    # Project specific
+    - joblib
+    - pyslurm
