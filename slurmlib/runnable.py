@@ -7,6 +7,7 @@ from typing import Callable, Iterable, Mapping, Tuple, Any
 import joblib
 
 from slurmlib import SLURMLIB_DIR
+from utils import get_result_file
 
 
 class _RunState(Enum):
@@ -59,17 +60,17 @@ class Runnable:
             function_data = (self.function, self.args, self.kwargs)
             hash = joblib.hash(function_data)
 
-            with open(SLURMLIB_DIR/f"{hash}.joblib", "wb") as file:
-                joblib.dump(function_data, file)
+            file = SLURMLIB_DIR / f"{hash}.joblib"
+            joblib.dump(function_data, file)
 
-            with open(SLURMLIB_DIR / f"{hash}.joblib", "rb") as file:
-                fn, args, kwargs = joblib.load(file)
 
-            self.result = fn(*args, **kwargs)
+            result = joblib.load(get_result_file(file))
 
             self._state = _RunState.FINISHED
         except RuntimeError:
             self._state = _RunState.FAILED
+
+        return result
 
     def get(self, blocking: bool = False, timeout: int = -1) -> Any:
         if self._state == _RunState.INITIALIZED:
