@@ -2,9 +2,10 @@
 """Tests for `slurmlib` package."""
 
 import pytest
+from config.dummy import DummyConfig
+from config.slurm import SlurmConfig
+from config.subprocess import SubprocessConfig
 from manager import SlurmLib
-
-from config import DummyConfig, SlurmConfig, SubprocessConfig
 
 
 def fn0():

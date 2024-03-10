@@ -4,7 +4,7 @@ from runner.subprocess import SubprocessRunner
 
 from slurmlib import WORKERSTUB
 
-from .config import NodeConfig
+from . import NodeConfig
 
 __all__ = ["SubprocessConfig"]
 
