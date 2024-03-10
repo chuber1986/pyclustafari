@@ -3,8 +3,9 @@ from pathlib import Path
 SLURMLIB_DIR = Path.home() / ".slurmlib"
 SLURMLIB_DIR.mkdir(exist_ok=True)
 
-from manager import *
-from config import NodeConfig
+ROOT = Path(__file__).parent.parent
+WORKERSTUB = ROOT / "slurmlib" / "workerstub.py"
+
 from pyprojroot import here
 
 here()
