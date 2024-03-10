@@ -10,7 +10,7 @@ with open("README.md") as readme_file:
 with open("CHANGELOG.md") as history_file:
     history = history_file.read()
 
-requirements = []
+requirements: list[str] = []
 
 test_requirements = [
     "bump2version>=1.0.1",

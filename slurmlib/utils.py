@@ -1,3 +1,5 @@
+""""Utility functions for Slurmlib."""
+
 from pathlib import Path
 
 

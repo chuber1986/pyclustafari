@@ -26,8 +26,8 @@ def fn3(a, b, c):
 @pytest.mark.parametrize(
     "fn, args, kwargs",
     [
-        (fn0, tuple(), dict()),
-        (fn1, (1,), dict()),
+        (fn0, tuple(), {}),
+        (fn1, (1,), {}),
         (fn2, tuple(), dict(a=1, b=2)),
         (fn2, (1,), dict(b=2)),
     ],
@@ -40,8 +40,8 @@ def test_apply(fn, args, kwargs):
 @pytest.mark.parametrize(
     "fn, args, kwargs",
     [
-        (fn0, [tuple(), tuple()], [dict(), dict()]),
-        (fn1, [(1,), (2,)], [dict(), dict()]),
+        (fn0, [tuple(), tuple()], [{}, {}]),
+        (fn1, [(1,), (2,)], [{}, {}]),
         (fn2, [tuple(), tuple()], [dict(a=1, b=2), dict(a=2, b=3)]),
         (fn2, [(1,), (2,)], [dict(b=2), dict(b=3)]),
     ],
@@ -57,7 +57,7 @@ def test_map(fn, args, kwargs):
     "fn, args, kwargs, fixed",
     [
         (fn3, [(1,), (2,)], [dict(c=2), dict(c=3)], (3,)),
-        (fn3, [(1,), (2,)], [dict(), dict()], (3, 4)),
+        (fn3, [(1,), (2,)], [{}, {}], (3, 4)),
         (fn3, [tuple(), tuple()], [dict(c=2), dict(c=2)], (3, 4)),
     ],
 )
@@ -72,11 +72,11 @@ def test_map_fixed_args(fn, args, kwargs, fixed):
     "fn, args, kwargs, kwfixed",
     [
         (fn3, [(1,), (2,)], [dict(c=2), dict(c=3)], dict(b=3)),
-        (fn3, [(1,), (2,)], [dict(), dict()], dict(b=3, c=4)),
+        (fn3, [(1,), (2,)], [{}, {}], dict(b=3, c=4)),
         (fn3, [tuple(), tuple()], [dict(c=2), dict(c=2)], dict(a=3, b=4)),
     ],
 )
-def test_map_fixed_args(fn, args, kwargs, kwfixed):
+def test_map_fixed_kwargs(fn, args, kwargs, kwfixed):
     with SlurmLib(DummyConfig()) as ctx:
         res = ctx.map(fn, args, kwargs, **kwfixed)
         for res, a, kwa in zip(res, args, kwargs):
@@ -86,7 +86,7 @@ def test_map_fixed_args(fn, args, kwargs, kwfixed):
 @pytest.mark.parametrize(
     "fn, kwargs",
     [
-        (fn0, [dict(), dict()]),
+        (fn0, [{}, {}]),
         (fn1, [dict(a=1), dict(a=2)]),
         (fn2, [dict(a=1, b=2), dict(a=2, b=3)]),
     ],
@@ -112,8 +112,8 @@ def test_map_nokwargs(fn, args):
 @pytest.mark.parametrize(
     "fn, args, kwargs",
     [
-        (fn0, tuple(), dict()),
-        (fn1, (1,), dict()),
+        (fn0, tuple(), {}),
+        (fn1, (1,), {}),
         (fn2, tuple(), dict(a=1, b=2)),
         (fn2, (1,), dict(b=2)),
     ],
@@ -127,8 +127,8 @@ def test_subprocess_runner(fn, args, kwargs):
 @pytest.mark.parametrize(
     "fn, args, kwargs",
     [
-        (fn0, tuple(), dict()),
-        (fn1, (1,), dict()),
+        (fn0, tuple(), {}),
+        (fn1, (1,), {}),
         (fn2, tuple(), dict(a=1, b=2)),
         (fn2, (1,), dict(b=2)),
     ],

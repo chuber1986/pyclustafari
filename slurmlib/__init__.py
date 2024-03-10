@@ -2,13 +2,13 @@
 
 from pathlib import Path
 
+from pyprojroot import here
+
 SLURMLIB_DIR = Path.home() / ".slurmlib"
 SLURMLIB_DIR.mkdir(exist_ok=True)
 
 ROOT = Path(__file__).parent.parent
 WORKERSTUB = ROOT / "slurmlib" / "workerstub.py"
-
-from pyprojroot import here
 
 here()
 

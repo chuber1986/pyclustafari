@@ -1,3 +1,5 @@
+"""Stub for loading JobLib files and executing them."""
+
 import argparse
 from pathlib import Path
 

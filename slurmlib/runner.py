@@ -1,44 +1,43 @@
+"""Multiple strategies for executing dumped JobLib files."""
+
 import logging
 import subprocess
 from pathlib import Path
 
-from runnable import Runnable, RunInformation
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from runnable import RunInformation, Runnable
 
 COMMAND_TEMPLATE = r"python {} {}"
 
 
 class SubprocessRunner:
+    """Runs a JobLib file in a new Python instance."""
 
     def __init__(self, workerstub: Path):
         self.workerstub = workerstub
 
     def run(self, function: Runnable) -> RunInformation:
-        logging.info(f"Execute Runner '{self.__class__.__name__}'")
+        logging.info("Execute Runner '%s'", self.__class__.__name__)
         info = RunInformation()
 
         file = function.tempfile
         command = COMMAND_TEMPLATE.format(str(self.workerstub), str(file)).split()
-        info.output = subprocess.run(command, capture_output=True)
+        info.output = subprocess.run(command, capture_output=True, check=True)
 
         return info
 
 
 class SlurmRunner:
+    """Runs a JobLib file on a Slurm cluster."""
 
     def __init__(self, workerstub: Path):
         self.workerstub = workerstub
 
     def run(self, function: Runnable) -> RunInformation:
-        logging.info(f"Execute Runner '{self.__class__.__name__}'")
-        info = RunInformation()
-
-        file = function.tempfile
-        command = COMMAND_TEMPLATE.format(str(self.workerstub), str(file)).split()
-
         raise NotImplementedError
-        return info
+        # logging.info(f"Execute Runner '{self.__class__.__name__}'")
+        # info = RunInformation()
+        #
+        # file = function.tempfile
+        # command = COMMAND_TEMPLATE.format(str(self.workerstub), str(file)).split()
+        #
+        # return info

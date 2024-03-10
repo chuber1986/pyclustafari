@@ -7,7 +7,7 @@ This will only work if the project was uploaded to the Python Package Index (PyP
 To install SlurmLib, run this command in your
 terminal:
 
-``` console
+```console
 $ pip install slurmlib
 ```
 
@@ -23,7 +23,7 @@ the [Gitlab repo][].
 
 Clone the repository:
 
-``` console
+```console
 $ git clone https://github.com/chuber1986/slurmlib
 ```
 
@@ -31,7 +31,7 @@ It is highly recommended to use the SSH link (starting with 'git:') instead of t
 
 Once you have a copy of the source, you can install it with:
 
-``` console
+```console
 $ pip install .
 ```
 

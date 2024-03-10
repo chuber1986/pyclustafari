@@ -1,4 +1,5 @@
 """Runnable information classes."""
+
 import logging
 import sys
 import time
@@ -35,11 +36,12 @@ def _get_partial_arguments(fn: Callable) -> Tuple[Tuple, Mapping]:
     if hasattr(fn, "func") and hasattr(fn, "args") and hasattr(fn, "keywords"):
         return fn.args, fn.keywords
 
-    return tuple(), dict()
+    return tuple(), {}
 
 
 class _RunState(Enum):
     """RunState class."""
+
     INITIALIZED = auto()
     RUNNING = auto()
     FAILED = auto()
@@ -52,6 +54,7 @@ class RunInformation:
     def __init__(self):
         self.output: str = ""
         self.error: Exception | None = None
+        self.result: Any = None
 
     @property
     def output(self):
@@ -69,18 +72,25 @@ class RunInformation:
     def error(self, error: Exception):
         self._error = error
 
+    @property
+    def result(self):
+        return self._result
+
+    @result.setter
+    def result(self, result: Exception):
+        self._result = result
+
 
 class Runner(Protocol):
-    def run(self, function: 'Runnable') -> RunInformation:
-        ...
+    def run(self, function: "Runnable") -> RunInformation: ...
 
 
 class RunnableStateError(RuntimeError):
-    ...
+    pass
 
 
 class TimeoutException(Exception):
-    ...
+    pass
 
 
 class Runnable:
@@ -100,7 +110,7 @@ class Runnable:
         self.tempfile: Path | None = None
         self.resultfile: Path | None = None
 
-        logging.info(f"Create Runnable: {repr(self)}")
+        logging.info("Create Runnable: %s", repr(self))
 
     @property
     def result(self) -> Any:
@@ -119,13 +129,15 @@ class Runnable:
 
     def execute(self):
         if self._state != _RunState.INITIALIZED:
-            raise RunnableStateError(f"Executing Runnable is only possible in state "
-                                     f"{_RunState.INITIALIZED} but got {self._state}.")
+            raise RunnableStateError(
+                f"Executing Runnable is only possible in state "
+                f"{_RunState.INITIALIZED} but got {self._state}."
+            )
 
         self._state = _RunState.RUNNING
         try:
             if self.runner is None:
-                logging.info("Execute '{repr(self)}' without runner.")
+                logging.info("Execute '%s' without runner.", repr(self))
                 stream = StringIO()
                 with redirected(err=stream, out=stream):
                     self.result = self.function(*self.args, **self.kwargs)
@@ -137,10 +149,16 @@ class Runnable:
             self.tempfile = SLURMLIB_DIR / f"{self._get_hash()}.joblib"
             self.resultfile = get_result_file(self.tempfile)
 
-            logging.debug(f"Dump serialized Runnable '{repr(self)}' to file '{str(self.tempfile)}'")
+            logging.debug(
+                "Dump serialized Runnable '%s' to file '%s'",
+                repr(self),
+                str(self.tempfile),
+            )
             joblib.dump(function_data, self.tempfile)
 
-            logging.info(f"Execute '{repr(self)}' with {self.runner.__class__.__name__}")
+            logging.info(
+                "Execute '%s' with %s", repr(self), self.runner.__class__.__name__
+            )
             self._info = self.runner.run(self)
         except RuntimeError as err:
             self._state = _RunState.FAILED
@@ -153,7 +171,11 @@ class Runnable:
         if self._state == _RunState.FINISHED:
             return True
 
-        if self._state == _RunState.RUNNING and self.resultfile.exists():
+        if (
+            self._state == _RunState.RUNNING
+            and self.resultfile
+            and self.resultfile.exists()
+        ):
             return True
 
         return False
@@ -201,4 +223,6 @@ class Runnable:
         a = [str(arg) for arg in list(pargs) + list(self.args)]
         kwa = [f"{str(k)}={str(v)}" for k, v in {**pkwargs, **self.kwargs}.items()]
 
-        return f"{fn_name}({", ".join(a)}, {", ".join(kwa)})"
+        astr = ", ".join(a)
+        kwastr = ", ".join(kwa)
+        return f"{fn_name}({astr}, {kwastr})"
