@@ -1,84 +1,76 @@
 default_language_version:
-  python: python3.10
+    python: python3.11
 
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
-    hooks:
-      # list of supported hooks: https://pre-commit.com/hooks.html
-      - id: check-added-large-files
-        args: ["--maxkb=10240"]
-      - id: check-case-conflict
-      - id: check-json
-      - id: check-yaml
-      - id: fix-encoding-pragma
-      - id: trailing-whitespace
-      - id: mixed-line-ending
-      - id: end-of-file-fixer
-      - id: detect-aws-credentials
-      - id: detect-private-key
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.5.0
+      hooks:
+          # list of supported hooks: https://pre-commit.com/hooks.html
+          - id: check-added-large-files
+            args: ["--maxkb=10240"]
+          - id: check-case-conflict
+          - id: check-json
+          - id: check-yaml
+          - id: fix-encoding-pragma
+          - id: trailing-whitespace
+          - id: mixed-line-ending
+          - id: end-of-file-fixer
+          - id: detect-private-key
 
-  # formatting config files json, yaml, md, css, ...
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.2
-    hooks:
-      - id: prettier
-        args: [--ignore-path .git]
+    # formatting config files json, yaml, md, css, ...
+    - repo: https://github.com/pre-commit/mirrors-prettier
+      rev: v4.0.0-alpha.8
+      hooks:
+          - id: prettier
 
-  # python import sorting
-  - repo: https://github.com/asottile/seed-isort-config
-    rev: v2.2.0
-    hooks:
-      - id: seed-isort-config
+    - repo: https://github.com/PyCQA/isort
+      rev: 5.13.2
+      hooks:
+          - id: isort
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
-    hooks:
-      - id: isort
+    # python autoformating
+    - repo: https://github.com/asottile/pyupgrade
+      rev: v3.15.1
+      hooks:
+          - id: pyupgrade
+            args: [--py39-plus]
 
-  # python autoformating
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v2.7.2
-    hooks:
-      - id: pyupgrade
-        args: [ --py39-plus ]
+    - repo: https://github.com/psf/black
+      rev: 24.2.0
+      hooks:
+          - id: black
+          - id: black-jupyter
 
-  - repo: https://github.com/psf/black
-    rev: 22.10.0
-    hooks:
-      - id: black
-      - id: black-jupyter
+    # clear notebook outputs
+    - repo: https://github.com/kynan/nbstripout
+      rev: 0.7.1
+      hooks:
+          - id: nbstripout
 
-  # clear notebook outputs
-  - repo: https://github.com/kynan/nbstripout
-    rev: 0.6.1
-    hooks:
-      - id: nbstripout
+    # python type checker
+    - repo: https://github.com/pre-commit/mirrors-mypy
+      rev: v1.9.0
+      hooks:
+          - id: mypy
+            exclude: tests/
+            additional_dependencies:
+                - types-click
 
-  # python type checker
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.982
-    hooks:
-      - id: mypy
-        exclude: tests/
-        additional_dependencies:
-            - types-click
+    # python code analysis
+    - repo: https://github.com/pycqa/flake8
+      rev: 7.0.0
+      hooks:
+          - id: flake8
 
-  # python code analysis
-  - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.9.2
-    hooks:
-      - id: flake8
+    - repo: https://github.com/pre-commit/mirrors-pylint
+      rev: v3.0.0a5
+      hooks:
+          - id: pylint
 
-  - repo: https://github.com/pre-commit/mirrors-pylint
-    rev: v3.0.0a5
-    hooks:
-      - id: pylint
-
-  # Check commit message
-  - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v2.1.1
-    hooks:
-      - id: conventional-pre-commit
-        stages: [commit-msg]
-        args: [] # optional: list of Conventional Commits types to allow
+    # Check commit message
+    - repo: https://github.com/compilerla/conventional-pre-commit
+      rev: v3.1.0
+      hooks:
+          - id: conventional-pre-commit
+            stages: [commit-msg]
+            args: [] # optional: list of Conventional Commits types to allow
