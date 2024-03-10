@@ -1,10 +1,12 @@
 """Main module."""
+
 from functools import partial
 from itertools import repeat
-from typing import Callable, Iterable, List, Mapping
+from typing import Callable, List
+from collections.abc import Iterable, Mapping
 
-from slurmlib.runnable import Runnable
 from slurmlib.config import NodeConfig
+from slurmlib.runnable import Runnable
 
 __all__ = ["SlurmLib"]
 
@@ -14,7 +16,7 @@ class SlurmLib:
 
     def __init__(self, config: NodeConfig):
         self._config = config
-        self._runs: List[Runnable] = []
+        self._runs: list[Runnable] = []
 
     def __enter__(self):
         return self
@@ -26,23 +28,31 @@ class SlurmLib:
         return self.apply_async(fn, *args, **kwargs).get(blocking=True)
 
     def apply_async(self, fn: Callable, /, *args, **kwargs) -> Runnable:
-        self._runs.append(Runnable(fn, *args, **kwargs))
+        self._runs.append(Runnable(self._config.runner, fn, *args, **kwargs))
         self._runs[-1].execute()
         return self._runs[-1]
 
-    def map(self, fn: Callable, /,
-            args: Iterable | None = None,
-            kwargs: Iterable[Mapping] | None = None,
-            *fixed_args,
-            **fixed_kwargs) -> List[Runnable]:
+    def map(
+        self,
+        fn: Callable,
+        /,
+        args: Iterable | None = None,
+        kwargs: Iterable[Mapping] | None = None,
+        *fixed_args,
+        **fixed_kwargs,
+    ) -> list[Runnable]:
         runners = self.map_async(fn, args, kwargs, *fixed_args, **fixed_kwargs)
         return [runner.get(blocking=True) for runner in runners]
 
-    def map_async(self, fn: Callable, /,
-                  args: Iterable | None = None,
-                  kwargs: Iterable[Mapping] | None = None,
-                  *fixed_args,
-                  **fixed_kwargs) -> List[Runnable]:
+    def map_async(
+        self,
+        fn: Callable,
+        /,
+        args: Iterable | None = None,
+        kwargs: Iterable[Mapping] | None = None,
+        *fixed_args,
+        **fixed_kwargs,
+    ) -> list[Runnable]:
 
         nargs = -1
 
@@ -73,7 +83,10 @@ class SlurmLib:
             )
 
         partial_fn = partial(fn, *fixed_args, **fixed_kwargs)
-        runs = [self.apply_async(partial_fn, *a, **kwa) for a, kwa in zip(iargs, ikwargs)]
+        runs = [
+            self.apply_async(partial_fn, *a, **kwa)
+            for a, kwa in zip(iargs, ikwargs)
+        ]
 
         self._runs += runs
         return runs
@@ -82,24 +95,27 @@ class SlurmLib:
 def main():
     import time
 
+    from joblib import wrap_non_picklable_objects
+
+    @wrap_non_picklable_objects
     def long_running_function(paramA, paramB, *, paramC, paramD=None):
         print(paramA, paramB)
         time.sleep(10)
         print(paramC, paramD)
         return "Some return value."
 
-    from joblib import delayed
-    ddd = delayed(long_running_function)(10, 20, paramC=30, paramD=40)
-    print(ddd)
-
-
-
     with SlurmLib(NodeConfig()) as ctx:
-        runs = ctx.map(long_running_function, [[1], [2], [3]], [dict(paramC=1), dict(paramC=2), dict(paramC=3)], 20,
-                       paramC=30, paramD=40)
+        runs = ctx.map(
+            long_running_function,
+            [[1], [2], [3]],
+            [dict(paramC=1), dict(paramC=2), dict(paramC=3)],
+            20,
+            paramC=30,
+            paramD=40,
+        )
 
     print(runs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
