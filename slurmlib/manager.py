@@ -22,7 +22,8 @@ class SlurmLib:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        for runnable in self._runs:
+            del runnable
 
     def apply(self, fn: Callable, /, *args, **kwargs) -> Runnable:
         return self.apply_async(fn, *args, **kwargs).get(blocking=True)
