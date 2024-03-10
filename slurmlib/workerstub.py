@@ -2,7 +2,6 @@ import argparse
 from pathlib import Path
 
 import joblib
-
 from utils import get_result_file
 
 
@@ -17,10 +16,10 @@ def execute(args):
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('filename', help="Path to the joblib file.")
+    parser.add_argument("filename", help="Path to the joblib file.")
 
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     execute(parse_arguments())

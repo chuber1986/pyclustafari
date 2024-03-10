@@ -2,7 +2,7 @@
 
 """The setup script."""
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("README.md") as readme_file:
     readme = readme_file.read()
@@ -10,8 +10,7 @@ with open("README.md") as readme_file:
 with open("CHANGELOG.md") as history_file:
     history = history_file.read()
 
-requirements = [
-]
+requirements = []
 
 test_requirements = [
     "bump2version>=1.0.1",
@@ -28,7 +27,7 @@ test_requirements = [
     "mkdocs-include-markdown-plugin>=3.9.1",
     "mkdocs-material>=8.5.8",
     "mkdocstrings[python]>=0.19.0",
-    "mkdocs-autorefs>=0.4.1"
+    "mkdocs-autorefs>=0.4.1",
 ]
 
 setup(
@@ -48,7 +47,7 @@ setup(
     description="Runs Python function on an SLURM cluster.",
     install_requires=requirements,
     license="MIT license",
-    long_description=readme + '\n\n' + history,
+    long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="slurmlib",
     name="slurmlib",

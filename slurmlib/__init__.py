@@ -1,5 +1,7 @@
 """Top-level package for SlurmLib."""
+
 from pathlib import Path
+
 SLURMLIB_DIR = Path.home() / ".slurmlib"
 SLURMLIB_DIR.mkdir(exist_ok=True)
 
