@@ -5,6 +5,8 @@ from dataclasses import dataclass
 
 from runnable import Runner
 
+__all__ = ["NodeConfig", "DummyConfig"]
+
 
 @dataclass
 class NodeConfig(abc.ABC):

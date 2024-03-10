@@ -1,9 +1,12 @@
 """Cluster configuration for SlurmRunner."""
 
+from runner.slurm import SlurmRunner
+
 from slurmlib import WORKERSTUB
 
-from ..runner import SlurmRunner
 from .config import NodeConfig
+
+__all__ = ["SlurmConfig"]
 
 
 class SlurmConfig(NodeConfig):
