@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [[ "$#" -ne 3 ]]; then
+    echo 'Usage: $0 <environment-type> <python-environment> <path-to-workerstub>'
+    echo "  envitonment-type: 1 ... system interpreter"
+    echo "  envitonment-type: 2 ... conda environment"
+    echo "  envitonment-type: 3 ... venv environment"
+    exit 1
+fi
+
+envtype=$1
+iterpreter=$2
+filename=$3
+
+if [[ $envtype -eq 1 ]]; then
+    $interpreter filename
+elif [[ $envtype -eq 2 ]]; then
+    conda activate $condaname
+    python $filename
+elif [[ $envtype -eq 3 ]]; then
+    echo "Venv environment not supported."
+    exit -1
+else
+    echo "Invalid environment type: $envtype"
+    exit -1
+fi

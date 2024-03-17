@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Tests for `slurmlib` package."""
+import os
 
 import pytest
 from config.dummy import DummyConfig
@@ -124,7 +125,7 @@ def test_subprocess_runner(fn, args, kwargs):
         assert ctx.apply(fn, *args, **kwargs) == fn(*args, **kwargs)
 
 
-@pytest.mark.skip(reason="not implemented")
+@pytest.mark.skipif(condition=os.system("srun -V") != 0, reason="slurm not available")
 @pytest.mark.parametrize(
     "fn, args, kwargs",
     [
