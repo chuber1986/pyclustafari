@@ -53,7 +53,7 @@ class RunInformation:
 
     def __init__(self):
         self.output: str = ""
-        self.error: Exception | None = None
+        self.error: str | None = None
         self.result: Any = None
 
     @property
@@ -69,7 +69,7 @@ class RunInformation:
         return self._error
 
     @error.setter
-    def error(self, error: Exception):
+    def error(self, error):
         self._error = error
 
     @property
@@ -77,7 +77,7 @@ class RunInformation:
         return self._result
 
     @result.setter
-    def result(self, result: Exception):
+    def result(self, result):
         self._result = result
 
 
@@ -171,14 +171,11 @@ class Runnable:
         if self._state == _RunState.FINISHED:
             return True
 
-        if (
+        return (
             self._state == _RunState.RUNNING
             and self.resultfile
             and self.resultfile.exists()
-        ):
-            return True
-
-        return False
+        )
 
     def _delete_temp_files(self):
         if self.tempfile is not None:
@@ -214,6 +211,7 @@ class Runnable:
         return self._result
 
     def __del__(self):
+        del self._info
         self._delete_temp_files()
 
     def __repr__(self):
