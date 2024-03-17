@@ -3,8 +3,11 @@
 import logging
 from pathlib import Path
 
-import pyslurm
+from pyslurm import Job, JobSubmitDescription
 from runnable import RunInformation, Runnable
+from typing_extensions import override
+
+import slurmlib
 
 COMMAND_TEMPLATE = r"python {} {}"
 
@@ -12,7 +15,45 @@ __all__ = ["SlurmRunner"]
 
 
 class SlurmInformation(RunInformation):
-    pass
+    """Provides information about executed slurm jobs."""
+
+    def __init__(self, jobid: int):
+        super().__init__()
+        self.jobid = jobid
+
+    def debug_info(self):
+        job = Job.load(self.jobid)
+        return job.to_dict()
+
+    @override
+    def output(self):
+        job = Job.load(self.jobid)
+        out_file = Path(job.standard_output)
+
+        if out_file.exists():
+            with out_file.open("r", encoding="utf-8") as f:
+                self._output = f.read()
+
+        return super().output()
+
+    @override
+    def error(self):
+        job = Job.load(self.jobid)
+        err_file = Path(job.standard_error)
+
+        if err_file.exists():
+            with err_file.open("r", encoding="utf-8") as f:
+                self._error = f.read()
+
+        return super().error()
+
+    def __del__(self):
+        job = Job.load(self.jobid)
+        out_file = Path(job.standard_output)
+        err_file = Path(job.standard_error)
+
+        out_file.unlink(missing_ok=True)
+        err_file.unlink(missing_ok=True)
 
 
 class SlurmRunner:
@@ -21,17 +62,24 @@ class SlurmRunner:
     def __init__(self, jobfile: Path, workerstub: Path):
         self.workerstub = workerstub
         self.jobfile = jobfile
+        self.job_id: int | None = None
 
     def run(self, function: Runnable) -> RunInformation:
         logging.info("Execute Runner '%s'", self.__class__.__name__)
-        info = SlurmInformation()
 
         file = function.tempfile
-        desc = pyslurm.JobSubmitDescription(
+        outfile = slurmlib.SLURMLIB_DIR / (file.stem + ".out")
+        errfile = slurmlib.SLURMLIB_DIR / (file.stem + ".err")
+
+        desc = JobSubmitDescription(
             name="slurmlib-job",
-            script=f"{str(self.jobfile)} {str(self.workerstub)} {file}",
+            standard_output=str(outfile),
+            standard_error=str(errfile),
+            script=str(self.jobfile),
+            script_args=f"1 python {str(self.workerstub)} {str(file)}",
         )
 
-        desc.submit()
+        jobid = desc.submit()
+        info = SlurmInformation(jobid)
 
         return info

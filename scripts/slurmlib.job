@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [[ "$#" -ne 3 ]]; then
-    echo 'Usage: $0 <environment-type> <python-environment> <path-to-workerstub>'
+if [[ "$#" -ne 4 ]]; then
+    echo 'Usage: $0 <environment-type> <python-environment> <path-to-workerstub> <joblib-file>'
     echo "  envitonment-type: 1 ... system interpreter"
     echo "  envitonment-type: 2 ... conda environment"
     echo "  envitonment-type: 3 ... venv environment"
@@ -9,14 +9,15 @@ if [[ "$#" -ne 3 ]]; then
 fi
 
 envtype=$1
-iterpreter=$2
-filename=$3
+interpreter="$2"
+workerstub="$3"
+joblibfile="$4"
 
 if [[ $envtype -eq 1 ]]; then
-    $interpreter filename
+    $interpreter $workerstub $joblibfile
 elif [[ $envtype -eq 2 ]]; then
     conda activate $condaname
-    python $filename
+    $interpreter $workerstub $joblibfile
 elif [[ $envtype -eq 3 ]]; then
     echo "Venv environment not supported."
     exit -1
