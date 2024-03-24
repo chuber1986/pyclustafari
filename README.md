@@ -10,7 +10,7 @@
 
 [Christian Huber](https://www.researchgate.net/profile/Christian-Huber-21)
 
-Runs Python function on an SLURM cluster.
+Runs Python functions on a SLURM cluster.
 
 [//]: # '# "Paper Title, Journal of whatever - special issue, 2020"'
 
