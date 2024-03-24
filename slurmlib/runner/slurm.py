@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pyslurm import Job, JobSubmitDescription
 from resources import Resources
+from resources.resources import Resource
 from runnable import RunInformation, Runnable
 from typing_extensions import override
 
@@ -60,10 +61,10 @@ class SlurmInformation(RunInformation):
 class SlurmRunner:
     """Runs a JobLib file on a Slurm cluster."""
 
-    def __init__(self, resources: Resources, jobfile: Path, workerstub: Path):
+    def __init__(self, *resources: Resource, jobfile: Path, workerstub: Path):
         self.workerstub = workerstub
         self.jobfile = jobfile
-        self.resources = resources
+        self.resources = Resources(resources)
         self.job_id: int | None = None
 
     def run(self, function: Runnable) -> RunInformation:

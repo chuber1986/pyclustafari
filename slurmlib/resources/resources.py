@@ -8,6 +8,7 @@ from enum import StrEnum
 from typing import Any
 
 __all__ = [
+    "Resource",
     "Resources",
     "Unit",
     "MemoryPerNodeResource",
@@ -282,7 +283,7 @@ class GenericResource(Resource):
 
 @dataclass
 class Resources:
-    resources: list[Resource]
+    resources: Iterable[Resource]
 
     def to_dict(self) -> dict[str, str]:
         return dict([res.to_string_tuple() for res in self.resources])
