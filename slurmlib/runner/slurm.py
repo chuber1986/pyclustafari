@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 from pyslurm import Job, JobSubmitDescription
+from resources import Resources
 from runnable import RunInformation, Runnable
 from typing_extensions import override
 
@@ -59,9 +60,10 @@ class SlurmInformation(RunInformation):
 class SlurmRunner:
     """Runs a JobLib file on a Slurm cluster."""
 
-    def __init__(self, jobfile: Path, workerstub: Path):
+    def __init__(self, resources: Resources, jobfile: Path, workerstub: Path):
         self.workerstub = workerstub
         self.jobfile = jobfile
+        self.resources = resources
         self.job_id: int | None = None
 
     def run(self, function: Runnable) -> RunInformation:
@@ -77,6 +79,7 @@ class SlurmRunner:
             standard_error=str(errfile),
             script=str(self.jobfile),
             script_args=f"1 python {str(self.workerstub)} {str(file)}",
+            **self.resources.to_dict(),
         )
 
         jobid = desc.submit()
