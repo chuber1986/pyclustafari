@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from resources.resources import Resource
+from resources.resources import Resource, Resources
 
 from slurmlib import JOB_FILE, SLURMLIB_DIR, WORKERSTUB
 
@@ -22,8 +22,10 @@ class SlurmConfig(NodeConfig):
         jobfile: Path | str = JOB_FILE,
         workerstub: Path | str = WORKERSTUB,
     ) -> None:
-        super().__init__(jobfile=jobfile, workerstub=workerstub)
-        self.resources = resources
+        res = Resources(resources=resources)
+        super().__init__(
+            resources=res.to_dict(), jobfile=jobfile, workerstub=workerstub
+        )
 
     @staticmethod
     def get_default_configurations() -> dict:

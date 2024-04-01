@@ -82,7 +82,7 @@ class RunInformation:
 
 
 class Runner(Protocol):
-    def run(self, function: "Runnable") -> RunInformation: ...
+    def run(self, function: "Runnable", resource: dict) -> RunInformation: ...
 
 
 class RunnableStateError(RuntimeError):
@@ -96,12 +96,15 @@ class TimeoutException(Exception):
 class Runnable:
     """Runner class."""
 
-    def __init__(self, runner: Runner | None, fn: Callable, *args, **kwargs):
+    def __init__(
+        self, runner: Runner | None, resources: dict, fn: Callable, *args, **kwargs
+    ):
         self._state: _RunState = _RunState.INITIALIZED
         self._info: RunInformation = RunInformation()
         self._result: Any = None
 
         self.runner = runner
+        self.resources = resources
         self.function: Callable = fn
         self.args: Iterable = args
         self.kwargs: Mapping = kwargs
@@ -159,7 +162,7 @@ class Runnable:
             logging.info(
                 "Execute '%s' with %s", repr(self), self.runner.__class__.__name__
             )
-            self._info = self.runner.run(self)
+            self._info = self.runner.run(self, self.resources)
         except RuntimeError as err:
             self._state = _RunState.FAILED
             self._info.error = err

@@ -32,7 +32,9 @@ class SlurmLib:
         return self.apply_async(fn, *args, **kwargs).get(blocking=True)
 
     def apply_async(self, fn: Callable, /, *args, **kwargs) -> Runnable:
-        self._runs.append(Runnable(self._runner, fn, *args, **kwargs))
+        self._runs.append(
+            Runnable(self._runner, self._config.resources, fn, *args, **kwargs)
+        )
         self._runs[-1].execute()
         return self._runs[-1]
 

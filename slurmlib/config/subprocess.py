@@ -11,4 +11,4 @@ __all__ = ["SubprocessConfig"]
 
 class SubprocessConfig(NodeConfig):
     def __init__(self, workerstub: Path | str = WORKERSTUB) -> None:
-        super().__init__(jobfile="", workerstub=workerstub)
+        super().__init__(resources={}, jobfile="", workerstub=workerstub)

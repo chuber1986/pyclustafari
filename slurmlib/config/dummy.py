@@ -7,4 +7,4 @@ __all__ = ["DummyConfig"]
 
 class DummyConfig(NodeConfig):
     def __init__(self) -> None:
-        super().__init__("")
+        super().__init__(resources={}, jobfile="", workerstub="")

@@ -43,10 +43,26 @@ class NodeConfig(abc.ABC):
     """Node configuration class."""
 
     def __init__(
-        self, jobfile: Path | str = JOB_FILE, workerstub: Path | str = WORKERSTUB
+        self,
+        resources: dict | None = None,
+        jobfile: Path | str = JOB_FILE,
+        workerstub: Path | str = WORKERSTUB,
     ) -> None:
         self.job_file = jobfile
         self.workerstub = workerstub
+
+        if resources is None:
+            resources = {}
+
+        self._resources = resources
+
+    @property
+    def resources(self) -> dict:
+        return self._resources
+
+    @resources.setter
+    def resources(self, resources):
+        self._resources = resources
 
     @staticmethod
     def load_defaults(config_file: Path):

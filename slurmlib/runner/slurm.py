@@ -4,8 +4,6 @@ import logging
 from pathlib import Path
 
 from pyslurm import Job, JobSubmitDescription
-from resources import Resources
-from resources.resources import Resource
 from runnable import RunInformation, Runnable
 from typing_extensions import override
 
@@ -64,16 +62,14 @@ class SlurmRunner:
 
     def __init__(
         self,
-        *resources: Resource,
         jobfile: Path | str = JOB_FILE,
         workerstub: Path | str = WORKERSTUB,
     ):
         self.workerstub = Path(workerstub)
         self.jobfile = Path(jobfile)
-        self.resources = Resources(resources)
         self.job_id: int | None = None
 
-    def run(self, function: Runnable) -> RunInformation:
+    def run(self, function: Runnable, resources: dict) -> RunInformation:
         logging.info("Execute Runner '%s'", self.__class__.__name__)
 
         file = function.tempfile
@@ -86,7 +82,7 @@ class SlurmRunner:
             standard_error=str(errfile),
             script=str(self.jobfile),
             script_args=f"1 python {str(self.workerstub)} {str(file)}",
-            **self.resources.to_dict(),
+            **resources,
         )
 
         jobid = desc.submit()
