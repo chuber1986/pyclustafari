@@ -7,6 +7,7 @@ from config.dummy import DummyConfig
 from config.slurm import SlurmConfig
 from config.subprocess import SubprocessConfig
 from manager import SlurmLib
+from resources import CPUPerTaskResource, MemoryPerNodeResource
 from runner.subprocess import SubprocessRunner
 
 
@@ -139,3 +140,10 @@ def test_subprocess_runner(fn, args, kwargs):
 def test_slurm_runner(fn, args, kwargs):
     with SlurmLib(SlurmConfig()) as ctx:
         assert ctx.apply(fn, *args, **kwargs) == fn(*args, **kwargs)
+
+
+def test_slurm_runner_config():
+    with SlurmLib(
+        SlurmConfig(MemoryPerNodeResource(value="10"), CPUPerTaskResource(value=1))
+    ) as ctx:
+        assert ctx.apply(fn0) == 1
