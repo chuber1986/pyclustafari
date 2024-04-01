@@ -27,7 +27,7 @@ repos:
           - id: isort
 
     - repo: https://github.com/psf/black
-      rev: 24.2.0
+      rev: 24.3.0
       hooks:
           - id: black
           - id: black-jupyter
@@ -44,7 +44,8 @@ repos:
       hooks:
           - id: mypy
             exclude: tests/
-            args: ["--check-untyped-defs"]
+            additional_dependencies: ["types-requests", "types-PyYAML"]
+            args: ["--ignore-missing-imports", "--check-untyped-defs"]
 
     # python code analysis
     - repo: https://github.com/pycqa/flake8
@@ -59,7 +60,7 @@ repos:
 
     # Check commit message
     - repo: https://github.com/compilerla/conventional-pre-commit
-      rev: v3.1.0
+      rev: v3.2.0
       hooks:
           - id: conventional-pre-commit
             stages: [commit-msg]
