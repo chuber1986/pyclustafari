@@ -3,5 +3,7 @@ requires = [
     "setuptools >= 40.9.0",
     "cython",
     "wheel",
+    "pyprojroot",
+    "pyyaml"
 ]
 build-backend = "setuptools.build_meta"
