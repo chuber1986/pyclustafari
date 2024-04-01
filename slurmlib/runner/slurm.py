@@ -10,6 +10,7 @@ from runnable import RunInformation, Runnable
 from typing_extensions import override
 
 import slurmlib
+from slurmlib import JOB_FILE, WORKERSTUB
 
 COMMAND_TEMPLATE = r"python {} {}"
 
@@ -61,9 +62,14 @@ class SlurmInformation(RunInformation):
 class SlurmRunner:
     """Runs a JobLib file on a Slurm cluster."""
 
-    def __init__(self, *resources: Resource, jobfile: Path, workerstub: Path):
-        self.workerstub = workerstub
-        self.jobfile = jobfile
+    def __init__(
+        self,
+        *resources: Resource,
+        jobfile: Path | str = JOB_FILE,
+        workerstub: Path | str = WORKERSTUB,
+    ):
+        self.workerstub = Path(workerstub)
+        self.jobfile = Path(jobfile)
         self.resources = Resources(resources)
         self.job_id: int | None = None
 

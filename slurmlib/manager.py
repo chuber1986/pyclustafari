@@ -5,8 +5,10 @@ from functools import partial
 from itertools import repeat
 from typing import Callable
 
+from runner.slurm import SlurmRunner
+
 from slurmlib.config import NodeConfig
-from slurmlib.runnable import Runnable
+from slurmlib.runnable import Runnable, Runner
 
 __all__ = ["SlurmLib"]
 
@@ -14,7 +16,8 @@ __all__ = ["SlurmLib"]
 class SlurmLib:
     """SlurmLib class."""
 
-    def __init__(self, config: NodeConfig):
+    def __init__(self, config: NodeConfig, runner: Runner | None = SlurmRunner()):
+        self._runner = runner
         self._config = config
         self._runs: list[Runnable] = []
 
@@ -29,7 +32,7 @@ class SlurmLib:
         return self.apply_async(fn, *args, **kwargs).get(blocking=True)
 
     def apply_async(self, fn: Callable, /, *args, **kwargs) -> Runnable:
-        self._runs.append(Runnable(self._config.runner, fn, *args, **kwargs))
+        self._runs.append(Runnable(self._runner, fn, *args, **kwargs))
         self._runs[-1].execute()
         return self._runs[-1]
 

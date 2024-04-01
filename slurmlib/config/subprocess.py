@@ -1,6 +1,6 @@
 """Cluster configuration for SubprocessRunner."""
 
-from runner.subprocess import SubprocessRunner
+from pathlib import Path
 
 from slurmlib import WORKERSTUB
 
@@ -10,5 +10,5 @@ __all__ = ["SubprocessConfig"]
 
 
 class SubprocessConfig(NodeConfig):
-    def __init__(self, workerstub=WORKERSTUB) -> None:
-        super().__init__(runner=SubprocessRunner(workerstub))
+    def __init__(self, workerstub: Path | str = WORKERSTUB) -> None:
+        super().__init__(jobfile="", workerstub=workerstub)

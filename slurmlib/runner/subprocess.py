@@ -6,6 +6,8 @@ from pathlib import Path
 
 from runnable import RunInformation, Runnable
 
+from slurmlib import WORKERSTUB
+
 COMMAND_TEMPLATE = r"python {} {}"
 
 __all__ = ["SubprocessRunner"]
@@ -14,8 +16,8 @@ __all__ = ["SubprocessRunner"]
 class SubprocessRunner:
     """Runs a JobLib file in a new Python instance."""
 
-    def __init__(self, workerstub: Path):
-        self.workerstub = workerstub
+    def __init__(self, workerstub: Path | str = WORKERSTUB):
+        self.workerstub = Path(workerstub)
 
     def run(self, function: Runnable) -> RunInformation:
         logging.info("Execute Runner '%s'", self.__class__.__name__)

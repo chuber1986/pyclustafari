@@ -96,7 +96,7 @@ class TimeoutException(Exception):
 class Runnable:
     """Runner class."""
 
-    def __init__(self, runner: Runner, fn: Callable, *args, **kwargs):
+    def __init__(self, runner: Runner | None, fn: Callable, *args, **kwargs):
         self._state: _RunState = _RunState.INITIALIZED
         self._info: RunInformation = RunInformation()
         self._result: Any = None
