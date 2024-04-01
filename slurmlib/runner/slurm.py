@@ -76,6 +76,7 @@ class SlurmRunner:
         outfile = slurmlib.SLURMLIB_DIR / (file.stem + ".out")
         errfile = slurmlib.SLURMLIB_DIR / (file.stem + ".err")
 
+        # TODO: make Python interpreter configurable
         desc = JobSubmitDescription(
             name="slurmlib-job",
             standard_output=str(outfile),
