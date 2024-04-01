@@ -173,10 +173,10 @@ def test_str_resource_errors(res, value, error):
 @pytest.mark.parametrize(
     "value, result",
     [
-        ("gpu:1", "gpu:1"),
-        ("gpu:tesla:1,gpu:volta:2", "gpu:tesla:1,gpu:volta:2"),
-        ({"gpu": 1}, "gpu:1"),
-        ({"gpu:tesla": 1, "gpu:volta": 2}, "gpu:tesla:1,gpu:volta:2"),
+        ("shard:1", "shard:1"),
+        ("shard:tesla:1,shard:volta:2", "shard:tesla:1,shard:volta:2"),
+        ({"shard": 1}, "shard:1"),
+        ({"shard:tesla": 1, "shard:volta": 2}, "shard:tesla:1,shard:volta:2"),
     ],
 )
 def test_dict_resources(res, name, value, result):
