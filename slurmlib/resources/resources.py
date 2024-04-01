@@ -25,6 +25,7 @@ __all__ = [
     "NTasksPerGPUResource",
     "GPUsResource",
     "GPUsPerTaskResource",
+    "GPUsPerNodeResource",
 ]
 
 
@@ -256,7 +257,7 @@ class GPUsPerTaskResource(Resource):
 
 @count_resource
 class GPUsPerNodeResource(Resource):
-    name: str = "gres_per_node"
+    name: str = "gpus_per_node"
 
 
 @string_resource
