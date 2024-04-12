@@ -6,8 +6,8 @@ from pathlib import Path
 from pyslurm import Job, JobSubmitDescription
 from runnable import RunInformation, Runnable
 from typing_extensions import override
+from utils import get_error_file, get_output_file
 
-import slurmlib
 from slurmlib import JOB_FILE, WORKERSTUB
 
 COMMAND_TEMPLATE = r"python {} {}"
@@ -73,8 +73,8 @@ class SlurmRunner:
         logging.info("Execute Runner '%s'", self.__class__.__name__)
 
         file = function.tempfile
-        outfile = slurmlib.SLURMLIB_DIR / (file.stem + ".out")
-        errfile = slurmlib.SLURMLIB_DIR / (file.stem + ".err")
+        outfile = get_output_file(file)
+        errfile = get_error_file(file)
 
         # TODO: make Python interpreter configurable
         desc = JobSubmitDescription(

@@ -1,28 +1,24 @@
 """Runnable information classes."""
 
 import logging
-import sys
 import time
-from contextlib import contextmanager
 from enum import Enum, auto
 from io import StringIO
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Protocol, Tuple
 
 import joblib
-from utils import get_result_file
+from utils import (
+    State,
+    get_error_file,
+    get_log_file,
+    get_output_file,
+    get_result_file,
+    get_state_file,
+    redirect_io,
+)
 
 from slurmlib import SLURMLIB_DIR
-
-
-@contextmanager
-def redirected(out=sys.stdout, err=sys.stderr):
-    saved = sys.stdout, sys.stderr
-    sys.stdout, sys.stderr = out, err
-    try:
-        yield
-    finally:
-        sys.stdout, sys.stderr = saved
 
 
 def _get_function_name(fn: Callable):
@@ -53,8 +49,9 @@ class RunInformation:
 
     def __init__(self):
         self.output: str = ""
-        self.error: str | None = None
+        self.error: str = ""
         self.result: Any = None
+        self.log: str = ""
 
     @property
     def output(self):
@@ -110,8 +107,13 @@ class Runnable:
         self.kwargs: Mapping = kwargs
 
         self._timestamp: int = time.monotonic_ns()
+        self.tempdir: Path | None = None
         self.tempfile: Path | None = None
         self.resultfile: Path | None = None
+        self.outputfile: Path | None = None
+        self.errorfile: Path | None = None
+        self.logfile: Path | None = None
+        self.statefile: Path | None = None
 
         logging.info("Create Runnable: %s", repr(self))
 
@@ -141,16 +143,27 @@ class Runnable:
         try:
             if self.runner is None:
                 logging.info("Execute '%s' without runner.", repr(self))
-                stream = StringIO()
-                with redirected(err=stream, out=stream):
+                out = StringIO()
+                err = StringIO()
+                with redirect_io(err=err, out=out):
                     self.result = self.function(*self.args, **self.kwargs)
 
-                self._info.output = str(stream)
+                self._info.output = str(out)
+                self._info.error = str(err)
+
                 return
 
             function_data = (self.function, self.args, self.kwargs)
-            self.tempfile = SLURMLIB_DIR / f"{self._get_hash()}.joblib"
+
+            self.tempdir = SLURMLIB_DIR / f"{self._get_hash()}"
+            self.tempdir.mkdir(exist_ok=True)
+
+            self.tempfile = self.tempdir / f"{_get_function_name(self.function)}.joblib"
             self.resultfile = get_result_file(self.tempfile)
+            self.outputfile = get_output_file(self.tempfile)
+            self.errorfile = get_error_file(self.tempfile)
+            self.logfile = get_log_file(self.tempfile)
+            self.statefile = get_state_file(self.tempfile)
 
             logging.debug(
                 "Dump serialized Runnable '%s' to file '%s'",
@@ -165,30 +178,62 @@ class Runnable:
             self._info = self.runner.run(self, self.resources)
         except RuntimeError as err:
             self._state = _RunState.FAILED
-            self._info.error = err
+            self._info.log += str(err)
 
     def _get_hash(self):
         return joblib.hash((self.function, self.args, self.kwargs, self._timestamp))
 
-    def is_result_available(self):
+    def is_finished(self):
         if self._state == _RunState.FINISHED:
             return True
 
-        return (
-            self._state == _RunState.RUNNING
-            and self.resultfile
-            and self.resultfile.exists()
-        )
+        return self._state == _RunState.RUNNING and self._read_state_file() in [
+            State.FAILED,
+            State.FINISHED,
+        ]
 
     def _delete_temp_files(self):
-        if self.tempfile is not None:
-            self.tempfile.unlink(missing_ok=True)
-        if self.resultfile is not None:
-            self.resultfile.unlink(missing_ok=True)
+        if self.tempdir is None or not self.tempdir.exists():
+            return
 
-    def _read_result_file(self):
-        self._result = joblib.load(self.resultfile)
-        self._state = _RunState.FINISHED
+        for file in self.tempdir.iterdir():
+            file.unlink(missing_ok=True)
+
+        self.tempdir.rmdir()
+
+    def _read_state_file(self) -> State:
+        if self.statefile is None or not self.statefile.exists():
+            return State.IDLE
+
+        with self.statefile.open("r") as f:
+            content = f.read().strip()
+
+        return State(content.lower())
+
+    def _read_file(self, file):
+        if file is None or not file.exists():
+            return ""
+
+        return joblib.load(file)
+
+    def _read_result_files(self):
+        assert self.is_finished(), "Must not read results before they are ready."
+        self._result = self._read_file(self.resultfile)
+
+        out = self._read_file(self.outputfile)
+        err = self._read_file(self.errorfile)
+
+        log = self._read_file(self.logfile)
+
+        self._info.output = out
+        self._info.error = err
+        self._info.log = log
+
+        if self._read_state_file() == State.FINISHED:
+            self._state = _RunState.FINISHED
+        else:
+            self._state = _RunState.FAILED
+
         self._delete_temp_files()
 
     def get(self, blocking: bool = False, timeout: int = -1) -> Any:
@@ -196,9 +241,9 @@ class Runnable:
             raise RunnableStateError("Job was not stated.")
 
         runtime = 0.0
-        while not self.is_result_available() and blocking:
+        while not self.is_finished() and blocking:
             if self._state == _RunState.FAILED:
-                raise RunnableStateError("Job was cancelled. No result available.")
+                raise RunnableStateError("Execution failed. No result available.")
 
             time.sleep(0.1)
             runtime += 0.1
@@ -206,11 +251,17 @@ class Runnable:
             if 0 < timeout < runtime:
                 raise TimeoutException("Result not ready. Timeout reached.")
 
-        if not self.is_result_available() and not blocking:
+        if not self.is_finished() and not blocking:
             raise RunnableStateError("Job not finished. Result not ready.")
 
         if self._state == _RunState.RUNNING:
-            self._read_result_file()
+            self._read_result_files()
+
+        if self._state == _RunState.FAILED:
+            raise RunnableStateError(
+                f"Job was cancelled. No result available.\n{self._info.log}\n\n{str(self._info.error)}"
+            )
+
         return self._result
 
     def __del__(self):
