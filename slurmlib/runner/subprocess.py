@@ -19,7 +19,7 @@ class SubprocessRunner:
     def __init__(self, workerstub: Path | str = WORKERSTUB):
         self.workerstub = Path(workerstub)
 
-    def run(self, function: Runnable) -> RunInformation:
+    def run(self, function: Runnable, _: dict) -> RunInformation:
         logging.info("Execute Runner '%s'", self.__class__.__name__)
         info = RunInformation()
 
