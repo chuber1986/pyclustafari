@@ -41,7 +41,7 @@ class SlurmLib:
     def map(
         self,
         fn: Callable,
-        args: Iterable | None = None,
+        args: Iterable[Iterable] | None = None,
         kwargs: Iterable[Mapping] | None = None,
         **fixed_kwargs,
     ) -> list[Runnable]:
@@ -51,7 +51,7 @@ class SlurmLib:
     def map_async(
         self,
         fn: Callable,
-        args: Iterable | None = None,
+        args: Iterable[Iterable] | None = None,
         kwargs: Iterable[Mapping] | None = None,
         **fixed_kwargs,
     ) -> list[Runnable]:
