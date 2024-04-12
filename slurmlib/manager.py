@@ -41,18 +41,16 @@ class SlurmLib:
     def map(
         self,
         fn: Callable,
-        *fixed_args,
         args: Iterable | None = None,
         kwargs: Iterable[Mapping] | None = None,
         **fixed_kwargs,
     ) -> list[Runnable]:
-        runners = self.map_async(fn, args, kwargs, *fixed_args, **fixed_kwargs)
+        runners = self.map_async(fn, args, kwargs, **fixed_kwargs)
         return [runner.get(blocking=True) for runner in runners]
 
     def map_async(
         self,
         fn: Callable,
-        *fixed_args,
         args: Iterable | None = None,
         kwargs: Iterable[Mapping] | None = None,
         **fixed_kwargs,
@@ -85,7 +83,7 @@ class SlurmLib:
                 "If provided, the list of keyword arguments must have the same length as the list of argument."
             )
 
-        partial_fn = partial(fn, *fixed_args, **fixed_kwargs)
+        partial_fn = partial(fn, **fixed_kwargs)
         runs = [
             self.apply_async(partial_fn, *a, **kwa) for a, kwa in zip(iargs, ikwargs)
         ]

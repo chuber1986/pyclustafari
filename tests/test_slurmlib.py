@@ -58,21 +58,6 @@ def test_map(fn, args, kwargs):
 
 
 @pytest.mark.parametrize(
-    "fn, args, kwargs, fixed",
-    [
-        (fn3, [(1,), (2,)], [dict(c=2), dict(c=3)], (3,)),
-        (fn3, [(1,), (2,)], [{}, {}], (3, 4)),
-        (fn3, [tuple(), tuple()], [dict(c=2), dict(c=2)], (3, 4)),
-    ],
-)
-def test_map_fixed_args(fn, args, kwargs, fixed):
-    with SlurmLib(DummyConfig(), runner=None) as ctx:
-        res = ctx.map(fn, args, kwargs, *fixed)
-        for res, a, kwa in zip(res, args, kwargs):
-            assert res == fn(*(fixed + a), **kwa)
-
-
-@pytest.mark.parametrize(
     "fn, args, kwargs, kwfixed",
     [
         (fn3, [(1,), (2,)], [dict(c=2), dict(c=3)], dict(b=3)),
