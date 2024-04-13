@@ -20,7 +20,7 @@ class SlurmInformation(RunInformation):
 
     def __init__(self, jobid: int):
         super().__init__()
-        self.jobid = jobid
+        self.jobid: int = jobid
 
     def debug_info(self):
         job = Job.load(self.jobid)
