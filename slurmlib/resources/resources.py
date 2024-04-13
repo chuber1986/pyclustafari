@@ -288,13 +288,3 @@ class Resources:
 
     def to_dict(self) -> dict[str, str]:
         return dict([res.to_string_tuple() for res in self.resources])
-
-
-def main():
-    resources = Resources([])
-
-    print(resources.to_dict())
-
-
-if __name__ == "__main__":
-    main()

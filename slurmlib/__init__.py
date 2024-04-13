@@ -1,17 +1,23 @@
 """Top-level package for SlurmLib."""
 
-from pathlib import Path
-
 from pyprojroot import here
 
-SLURMLIB_DIR = Path.home() / ".slurmlib"
-SLURMLIB_DIR.mkdir(exist_ok=True)
-
-ROOT = Path(__file__).parent.parent
-WORKERSTUB = ROOT / "slurmlib" / "workerstub.py"
-JOB_FILE = ROOT / "scripts" / "slurmlib.job"
+from slurmlib.manager import ClusterManager
+from slurmlib.runner.dummy import DummyConfig, DummyRunner
+from slurmlib.runner.slurm import SlurmConfig, SlurmRunner
+from slurmlib.runner.subprocess import SubprocessConfig, SubprocessRunner
 
 here()
+
+__all__ = [
+    ClusterManager.__name__,
+    DummyConfig.func.__name__,
+    DummyRunner.__name__,
+    SlurmConfig.func.__name__,
+    SlurmRunner.__name__,
+    SubprocessConfig.func.__name__,
+    SubprocessRunner.__name__,
+]
 
 __author__ = """Christian Huber"""
 __email__ = "hiddenaddress@gmail.com"

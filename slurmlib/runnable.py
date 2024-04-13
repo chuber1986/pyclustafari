@@ -3,7 +3,6 @@
 import logging
 import time
 from enum import Enum, auto
-from io import StringIO
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Protocol, Tuple
 
@@ -15,10 +14,9 @@ from utils import (
     get_output_file,
     get_result_file,
     get_state_file,
-    redirect_io,
 )
 
-from slurmlib import SLURMLIB_DIR
+from slurmlib.paths import SLURMLIB_DIR
 
 
 def _get_function_name(fn: Callable):
@@ -39,7 +37,7 @@ class _RunState(Enum):
     """RunState class."""
 
     INITIALIZED = auto()
-    RUNNING = auto()
+    READY = auto()
     FAILED = auto()
     FINISHED = auto()
 
@@ -48,9 +46,9 @@ class RunInformation:
     """RunInformation class."""
 
     def __init__(self):
+        self.result: Any = None
         self.output: str = ""
         self.error: str = ""
-        self.result: Any = None
         self.log: str = ""
 
     @property
@@ -79,7 +77,7 @@ class RunInformation:
 
 
 class Runner(Protocol):
-    def run(self, function: "Runnable", resource: dict) -> RunInformation: ...
+    def run(self, function: "Runnable") -> RunInformation: ...
 
 
 class ExecutionStateError(BaseException):
@@ -99,8 +97,6 @@ class Runnable:
 
     def __init__(
         self,
-        runner: Runner | None,
-        resources: dict,
         fn: Callable,
         *args,
         return_object=False,
@@ -111,8 +107,6 @@ class Runnable:
         self._result: Any = None
         self._object: Any = None
 
-        self.runner = runner
-        self.resources = resources
         self.function: Callable = fn
         self.args: Iterable = args
         self.kwargs: Mapping = kwargs
@@ -139,7 +133,7 @@ class Runnable:
         if self.result is not None:
             raise RunnableStateError("Results already set.")
 
-        if self._state != _RunState.RUNNING:
+        if self._state != _RunState.READY:
             raise RunnableStateError("Result can only be set by an RUNNING Runnable.")
 
         self._result = result
@@ -152,20 +146,7 @@ class Runnable:
                 f"{_RunState.INITIALIZED} but got {self._state}."
             )
 
-        self._state = _RunState.RUNNING
         try:
-            if self.runner is None:
-                logging.info("Execute '%s' without runner.", repr(self))
-                out = StringIO()
-                err = StringIO()
-                with redirect_io(err=err, out=out):
-                    self.result = self.function(*self.args, **self.kwargs)
-
-                self._info.output = str(out)
-                self._info.error = str(err)
-
-                return
-
             function_data = (self.function, self.args, self.kwargs)
 
             self.tempdir = SLURMLIB_DIR / f"{self._get_hash()}"
@@ -184,11 +165,7 @@ class Runnable:
                 str(self.tempfile),
             )
             joblib.dump(function_data, self.tempfile)
-
-            logging.info(
-                "Execute '%s' with %s", repr(self), self.runner.__class__.__name__
-            )
-            self._info = self.runner.run(self, self.resources)
+            self._state = _RunState.READY
         except RuntimeError as err:
             self._state = _RunState.FAILED
             self._info.log += str(err)
@@ -200,7 +177,7 @@ class Runnable:
         if self._state == _RunState.FINISHED:
             return True
 
-        return self._state == _RunState.RUNNING and self._read_state_file() in [
+        return self._state == _RunState.READY and self._read_state_file() in [
             State.FAILED,
             State.FINISHED,
         ]
@@ -280,7 +257,7 @@ class Runnable:
         if not self.is_finished() and not blocking:
             raise RunnableStateError("Job not finished. Result not ready.")
 
-        if self._state == _RunState.RUNNING:
+        if self._state == _RunState.READY:
             self._read_result_files()
 
         if self._state == _RunState.FAILED:

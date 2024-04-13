@@ -1,23 +1,21 @@
 """Main module."""
 
+import logging
 from collections.abc import Iterable, Mapping
 from functools import partial
 from itertools import repeat
 from typing import Callable
 
-from runner.slurm import SlurmRunner
-
 from slurmlib.config import NodeConfig
-from slurmlib.runnable import Runnable, Runner
+from slurmlib.runnable import Runnable
 
-__all__ = ["SlurmLib"]
+__all__ = ["ClusterManager"]
 
 
-class SlurmLib:
+class ClusterManager:
     """SlurmLib class."""
 
-    def __init__(self, config: NodeConfig, runner: Runner | None = SlurmRunner()):
-        self._runner = runner
+    def __init__(self, config: NodeConfig):
         self._config = config
         self._runs: list[Runnable] = []
 
@@ -31,6 +29,7 @@ class SlurmLib:
     def apply(
         self, fn: Callable, /, *args, return_object: bool = False, **kwargs
     ) -> Runnable:
+        logging.debug("Call 'apply'")
         return self.apply_async(fn, *args, return_object=return_object, **kwargs).get(
             blocking=True
         )
@@ -38,17 +37,20 @@ class SlurmLib:
     def apply_async(
         self, fn: Callable, /, *args, return_object: bool = False, **kwargs
     ) -> Runnable:
+        logging.debug("Call 'apply_async'")
         self._runs.append(
             Runnable(
-                self._runner,
-                self._config.resources,
                 fn,
                 *args,
                 return_object=return_object,
                 **kwargs,
             )
         )
-        self._runs[-1].execute()
+
+        logging.info(
+            "Execute '%s' with %s", repr(self), self._config.runner.__class__.__name__
+        )
+        self._config.runner.run(self._runs[-1])
         return self._runs[-1]
 
     def map(
@@ -59,6 +61,7 @@ class SlurmLib:
         return_object: bool = False,
         **fixed_kwargs,
     ) -> list[Runnable]:
+        logging.debug("Call 'map'")
         runners = self.map_async(
             fn, args, kwargs, return_object=return_object, **fixed_kwargs
         )
@@ -72,6 +75,7 @@ class SlurmLib:
         return_object: bool = False,
         **fixed_kwargs,
     ) -> list[Runnable]:
+        logging.debug("Call 'map_async'")
 
         nkwargs = 0
         nargs = 0

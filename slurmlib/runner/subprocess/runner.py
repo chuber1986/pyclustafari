@@ -2,11 +2,10 @@
 
 import logging
 import subprocess
-from pathlib import Path
 
-from runnable import RunInformation, Runnable
+from slurmlib.runnable import RunInformation, Runnable
 
-from slurmlib import WORKERSTUB
+from .config import _SubprocessConfig
 
 COMMAND_TEMPLATE = r"python {} {}"
 
@@ -16,15 +15,18 @@ __all__ = ["SubprocessRunner"]
 class SubprocessRunner:
     """Runs a JobLib file in a new Python instance."""
 
-    def __init__(self, workerstub: Path | str = WORKERSTUB):
-        self.workerstub = Path(workerstub)
+    def __init__(self, config: _SubprocessConfig):
+        self.config = config
 
-    def run(self, function: Runnable, _: dict) -> RunInformation:
+    def run(self, runnable: Runnable) -> RunInformation:
         logging.info("Execute Runner '%s'", self.__class__.__name__)
+        runnable.execute()
         info = RunInformation()
 
-        file = function.tempfile
-        command = COMMAND_TEMPLATE.format(str(self.workerstub), str(file)).split()
+        file = runnable.tempfile
+        command = COMMAND_TEMPLATE.format(
+            str(self.config.workerstub), str(file)
+        ).split()
         info.output = subprocess.run(command, capture_output=True, check=True)
 
         return info

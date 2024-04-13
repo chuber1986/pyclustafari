@@ -6,9 +6,10 @@ from pathlib import Path
 from pyslurm import Job, JobSubmitDescription
 from runnable import RunInformation, Runnable
 from typing_extensions import override
-from utils import get_error_file, get_output_file
 
-from slurmlib import JOB_FILE, WORKERSTUB
+from slurmlib.utils import get_error_file, get_output_file
+
+from .config import _SlurmConfig
 
 COMMAND_TEMPLATE = r"python {} {}"
 
@@ -60,19 +61,15 @@ class SlurmInformation(RunInformation):
 class SlurmRunner:
     """Runs a JobLib file on a Slurm cluster."""
 
-    def __init__(
-        self,
-        jobfile: Path | str = JOB_FILE,
-        workerstub: Path | str = WORKERSTUB,
-    ):
-        self.workerstub = Path(workerstub)
-        self.jobfile = Path(jobfile)
+    def __init__(self, config: _SlurmConfig):
+        self.config = config
         self.job_id: int | None = None
 
-    def run(self, function: Runnable, resources: dict) -> RunInformation:
+    def run(self, runnable: Runnable) -> RunInformation:
         logging.info("Execute Runner '%s'", self.__class__.__name__)
+        runnable.execute()
 
-        file = function.tempfile
+        file = runnable.tempfile
         outfile = get_output_file(file)
         errfile = get_error_file(file)
 
@@ -81,9 +78,9 @@ class SlurmRunner:
             name="slurmlib-job",
             standard_output=str(outfile),
             standard_error=str(errfile),
-            script=str(self.jobfile),
-            script_args=f"1 python {str(self.workerstub)} {str(file)}",
-            **resources,
+            script=str(self.config.job_file),
+            script_args=f"1 python {str(self.config.workerstub)} {str(file)}",
+            **self.config.resources,
         )
 
         jobid = desc.submit()
