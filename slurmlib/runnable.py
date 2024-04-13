@@ -82,15 +82,15 @@ class Runner(Protocol):
     def run(self, function: "Runnable", resource: dict) -> RunInformation: ...
 
 
-class ExecutionStateError(RuntimeError):
+class ExecutionStateError(BaseException):
     pass
 
 
-class RunnableStateError(RuntimeError):
+class RunnableStateError(BaseException):
     pass
 
 
-class TimeoutException(Exception):
+class TimeoutException(BaseException):
     pass
 
 
