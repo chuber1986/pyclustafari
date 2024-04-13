@@ -28,12 +28,25 @@ class SlurmLib:
         for runnable in self._runs:
             del runnable
 
-    def apply(self, fn: Callable, /, *args, **kwargs) -> Runnable:
-        return self.apply_async(fn, *args, **kwargs).get(blocking=True)
+    def apply(
+        self, fn: Callable, /, *args, return_object: bool = False, **kwargs
+    ) -> Runnable:
+        return self.apply_async(fn, *args, return_object=return_object, **kwargs).get(
+            blocking=True
+        )
 
-    def apply_async(self, fn: Callable, /, *args, **kwargs) -> Runnable:
+    def apply_async(
+        self, fn: Callable, /, *args, return_object: bool = False, **kwargs
+    ) -> Runnable:
         self._runs.append(
-            Runnable(self._runner, self._config.resources, fn, *args, **kwargs)
+            Runnable(
+                self._runner,
+                self._config.resources,
+                fn,
+                *args,
+                return_object=return_object,
+                **kwargs,
+            )
         )
         self._runs[-1].execute()
         return self._runs[-1]
@@ -43,9 +56,12 @@ class SlurmLib:
         fn: Callable,
         args: Iterable[Iterable] | None = None,
         kwargs: Iterable[Mapping] | None = None,
+        return_object: bool = False,
         **fixed_kwargs,
     ) -> list[Runnable]:
-        runners = self.map_async(fn, args, kwargs, **fixed_kwargs)
+        runners = self.map_async(
+            fn, args, kwargs, return_object=return_object, **fixed_kwargs
+        )
         return [runner.get(blocking=True) for runner in runners]
 
     def map_async(
@@ -53,6 +69,7 @@ class SlurmLib:
         fn: Callable,
         args: Iterable[Iterable] | None = None,
         kwargs: Iterable[Mapping] | None = None,
+        return_object: bool = False,
         **fixed_kwargs,
     ) -> list[Runnable]:
 
@@ -85,7 +102,8 @@ class SlurmLib:
 
         partial_fn = partial(fn, **fixed_kwargs)
         runs = [
-            self.apply_async(partial_fn, *a, **kwa) for a, kwa in zip(iargs, ikwargs)
+            self.apply_async(partial_fn, *a, return_object=return_object, **kwa)
+            for a, kwa in zip(iargs, ikwargs)
         ]
 
         self._runs += runs

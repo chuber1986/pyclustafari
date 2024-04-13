@@ -1,6 +1,7 @@
 """Stub for loading JobLib files and executing them."""
 
 import argparse
+import pathlib
 from pathlib import Path
 
 import joblib
@@ -40,11 +41,13 @@ class StateUtils:
     def log(self, msg: str):
         with self.logfile.open("a") as f:
             f.write(msg)
+            f.write("\n")
 
 
 def execute(args):
-    file = Path(args.filename)
+    file = Path(args.filename).expanduser().resolve()
     result = None
+    fnobj = None
 
     utils = StateUtils(file)
     utils.set_state(State.STARTED)
@@ -53,6 +56,8 @@ def execute(args):
         utils.log("Load job file")
         utils.set_state(State.LOAD_FILE)
         fn, args, kwargs = joblib.load(file)
+        if hasattr(fn, "__self__"):
+            fnobj = fn.__self__
 
         utils.log("Start execution")
         utils.set_state(State.RUNNING)
@@ -69,14 +74,22 @@ def execute(args):
     finally:
         utils.log("Write output")
         utils.set_state(State.DUMP_RESULT)
-        joblib.dump(result, get_result_file(file))
+        joblib.dump((fnobj, result), get_result_file(file))
         utils.log("Execution finished")
         utils.set_state(State.FINISHED)
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("filename", help="Path to the joblib file.")
+    parser.add_argument(
+        "filename",
+        nargs="?",
+        type=pathlib.Path,
+        help="Path to the joblib file.",
+        default=Path(
+            "~/.slurmlib/16df065a5cb2793dd87127fc8f7cb41c/BaseMultilayerPerceptron.fit.joblib"
+        ),
+    )
 
     return parser.parse_args()
 

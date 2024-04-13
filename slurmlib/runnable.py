@@ -82,6 +82,10 @@ class Runner(Protocol):
     def run(self, function: "Runnable", resource: dict) -> RunInformation: ...
 
 
+class ExecutionStateError(RuntimeError):
+    pass
+
+
 class RunnableStateError(RuntimeError):
     pass
 
@@ -94,17 +98,26 @@ class Runnable:
     """Runner class."""
 
     def __init__(
-        self, runner: Runner | None, resources: dict, fn: Callable, *args, **kwargs
+        self,
+        runner: Runner | None,
+        resources: dict,
+        fn: Callable,
+        *args,
+        return_object=False,
+        **kwargs,
     ):
         self._state: _RunState = _RunState.INITIALIZED
         self._info: RunInformation = RunInformation()
         self._result: Any = None
+        self._object: Any = None
 
         self.runner = runner
         self.resources = resources
         self.function: Callable = fn
         self.args: Iterable = args
         self.kwargs: Mapping = kwargs
+
+        self.return_object = return_object
 
         self._timestamp: int = time.monotonic_ns()
         self.tempdir: Path | None = None
@@ -210,15 +223,28 @@ class Runnable:
 
         return State(content.lower())
 
-    def _read_file(self, file):
+    def _read_job_file(self, file: Path | None):
         if file is None or not file.exists():
             return ""
 
-        return joblib.load(file)
+        try:
+            return joblib.load(file)
+        except EOFError:
+            return None
+
+    def _read_file(self, file: Path | None):
+        if file is None or not file.exists():
+            return ""
+
+        try:
+            with file.open("r") as f:
+                return f.read()
+        except RuntimeError:
+            return ""
 
     def _read_result_files(self):
         assert self.is_finished(), "Must not read results before they are ready."
-        self._result = self._read_file(self.resultfile)
+        self._object, self._result = self._read_job_file(self.resultfile)
 
         out = self._read_file(self.outputfile)
         err = self._read_file(self.errorfile)
@@ -258,9 +284,13 @@ class Runnable:
             self._read_result_files()
 
         if self._state == _RunState.FAILED:
-            raise RunnableStateError(
-                f"Job was cancelled. No result available.\n{self._info.log}\n\n{str(self._info.error)}"
+            raise ExecutionStateError(
+                "Job was cancelled. No result available.\nSlurmlib Log:\n"
+                f"{self._info.log}\n\nExecution Error:\n{str(self._info.error)}"
             )
+
+        if self.return_object:
+            return self._object, self._result
 
         return self._result
 
