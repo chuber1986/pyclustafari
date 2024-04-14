@@ -50,6 +50,7 @@ setup(
     name="clustafari",
     packages=find_packages(include=["clustafari", "clustafari.*"]),
     package_data={"": ["../CHANGELOG.md"]},
+    data_files=[("config", ["config/slurm_defaults.yaml"])],
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/chuber1986/pyclustafarai",
