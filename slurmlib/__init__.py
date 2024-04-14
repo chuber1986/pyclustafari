@@ -12,36 +12,33 @@ from slurmlib.runner.subprocess import SubprocessConfig, SubprocessRunner
 
 here()
 
-__all__ = [
-    ClusterContext.__name__,
-    DummyConfig.func.__name__,
-    DummyRunner.__name__,
-    SlurmConfig.func.__name__,
-    SlurmRunner.__name__,
-    SubprocessConfig.func.__name__,
-    SubprocessRunner.__name__,
-]
+__exports__ = {
+    DummyConfig.func.__name__: DummyConfig,
+    SlurmConfig.func.__name__: SlurmConfig,
+    SubprocessConfig.func.__name__: SubprocessConfig,
+    **{
+        item.__name__: item
+        for item in [
+            ClusterContext,
+            DummyRunner,
+            SlurmRunner,
+            SubprocessRunner,
+            StateError,
+            TimeoutException,
+            RunnableStateError,
+            wrap_non_picklable_objects,
+            delayed,
+        ]
+    },
+}
 
-_classes = [
-    ClusterContext,
-    DummyConfig.func,
-    DummyRunner,
-    SlurmConfig.func,
-    SlurmRunner,
-    SubprocessConfig.func,
-    SubprocessRunner,
-]
 
-_annotations = [
-    wrap_non_picklable_objects,
-    delayed,
-]
+def _set_attributes(attributes: dict):
+    for key, value in attributes.items():
+        globals()[key] = value
 
-_exceptions = [
-    StateError,
-    TimeoutException,
-    RunnableStateError,
-]
+
+_set_attributes(__exports__)
 
 __author__ = """Christian Huber"""
 __email__ = "hiddenaddress@gmail.com"

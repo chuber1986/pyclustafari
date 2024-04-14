@@ -5,9 +5,7 @@ from pathlib import Path
 from resources.resources import Resource, Resources
 
 from slurmlib.config import NodeConfig
-from slurmlib.paths import JOB_FILE, SLURMLIB_DIR, WORKERSTUB
-
-_defaults = NodeConfig.load_defaults(SLURMLIB_DIR / "slurm_defaults.yaml")
+from slurmlib.paths import JOB_FILE, WORKERSTUB
 
 
 class _SlurmConfig(NodeConfig):
@@ -28,11 +26,8 @@ class _SlurmConfig(NodeConfig):
             workerstub=workerstub,
         )
 
-    @staticmethod
-    def get_default_configurations() -> dict:
-        return dict(_defaults)
+    def __str__(self):
+        return f"{self.__class__.__name__[1:]}({self.resources})"
 
-
-for key, value in _defaults.items():
-    setattr(_SlurmConfig, key, value)
-    globals()[key] = value
+    def __repr__(self):
+        return str(self)

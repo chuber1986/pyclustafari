@@ -68,7 +68,7 @@ class NodeConfig(abc.ABC):
         self._resources = resources
 
     @staticmethod
-    def load_defaults(config_file: Path):
+    def load_defaults(config_file: Path) -> dict:
         if not config_file.exists() or not config_file.is_file():
             return {}
 
