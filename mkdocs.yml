@@ -1,7 +1,7 @@
-site_name: SlurmLib
-site_url: https://github.com/chuber1986/slurmlib
-repo_url: https://github.com/chuber1986/slurmlib
-repo_name: slurmlib
+site_name: PyClustafari
+site_url: https://github.com/chuber1986/pyclustafari
+repo_url: https://github.com/chuber1986/pyclustafari
+repo_name: pyclustafari
 #strict: true
 nav:
   - Home: index.md
@@ -52,16 +52,16 @@ plugins:
 #  - autorefs
   - mkdocstrings:
       watch:
-        - slurmlib
+        - pyclustafari
 extra:
   social:
     # - icon: fontawesome/brands/twitter
     #   # replace with your own tweet link below
-    #   link: https://github.com/chuber1986/slurmlib
+    #   link: https://github.com/chuber1986/pyclustafari
     #   name: Tweet
     # - icon: fontawesome/brands/facebook
     #   # replace with your own facebook link below
-    #   link: https://github.com/chuber1986/slurmlib
+    #   link: https://github.com/chuber1986/pyclustafari
     #   name: Facebook
     - icon: material/web
       link: "https://silicon-austria-labs.com/"
@@ -69,7 +69,7 @@ extra:
       link: https://www.linkedin.com/company/silicon-austria-labs
       name: LinkedIn
     - icon: fontawesome/brands/gitlab
-      link: https://github.com/chuber1986/slurmlib
+      link: https://github.com/chuber1986/pyclustafari
       name: Gitlab
     - icon: material/email
       link: "mailto:hiddenaddress@gmail.com"

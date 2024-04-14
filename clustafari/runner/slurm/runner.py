@@ -5,9 +5,9 @@ import logging
 from pyslurm import JobSubmitDescription
 from typing_extensions import override
 
-from slurmlib import StateError
-from slurmlib.runner import BaseRunner, RunInformation, Runnable
-from slurmlib.utils import get_error_file, get_output_file
+from clustafari.exceptions import StateError
+from clustafari.runner import BaseRunner, RunInformation, Runnable
+from clustafari.utils import get_error_file, get_output_file
 
 from .config import _SlurmConfig
 from .info import SlurmInformation
@@ -39,7 +39,7 @@ class SlurmRunner(BaseRunner):
 
         # TODO: make Python interpreter configurable
         desc = JobSubmitDescription(
-            name="slurmlib-job",
+            name=runobj.get_function_name(),
             standard_output=str(outfile),
             standard_error=str(errfile),
             script=str(self.config.job_file),

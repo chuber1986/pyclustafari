@@ -1,4 +1,4 @@
-"""SlurmLib exceptions."""
+"""Clustafari exceptions."""
 
 
 class StateError(BaseException):

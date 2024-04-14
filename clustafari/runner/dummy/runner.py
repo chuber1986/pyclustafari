@@ -5,8 +5,8 @@ from io import StringIO
 
 from typing_extensions import override
 
-from slurmlib.runner import BaseRunner, RunInformation, Runnable
-from slurmlib.utils import redirect_io
+from clustafari.runner import BaseRunner, RunInformation, Runnable
+from clustafari.utils import redirect_io
 
 COMMAND_TEMPLATE = r"python {} {}"
 

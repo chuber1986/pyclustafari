@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-from slurmlib.config import NodeConfig
-from slurmlib.paths import WORKERSTUB
+from clustafari.config import NodeConfig
+from clustafari.paths import WORKERSTUB
 
 
 class _SubprocessConfig(NodeConfig):

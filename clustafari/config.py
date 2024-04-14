@@ -7,8 +7,8 @@ from pathlib import Path
 
 import yaml
 
-from slurmlib.paths import JOB_FILE, WORKERSTUB
-from slurmlib.runner import BaseRunner
+from clustafari.paths import JOB_FILE, WORKERSTUB
+from clustafari.runner import BaseRunner
 
 
 def _get_target(definition):

@@ -4,14 +4,14 @@ import logging
 from collections.abc import Iterable, Mapping
 from typing import Any, Callable
 
-from slurmlib.config import NodeConfig
-from slurmlib.runner import Runnable
+from clustafari.config import NodeConfig
+from clustafari.runner import Runnable
 
 __all__ = ["ClusterContext"]
 
 
 class ClusterContext:
-    """SlurmLib class."""
+    """PyClustafari context manager."""
 
     def __init__(self, config: NodeConfig):
         self._config = config

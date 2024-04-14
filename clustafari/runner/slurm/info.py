@@ -4,7 +4,7 @@ from pathlib import Path
 
 from pyslurm import Job
 
-from slurmlib.runner import RunInformation
+from clustafari.runner import RunInformation
 
 COMMAND_TEMPLATE = r"python {} {}"
 

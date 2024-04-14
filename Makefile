@@ -1,4 +1,4 @@
-sources = slurmlib
+sources = clustafari
 conda_file = environment.yaml
 lock_file = environment.lock
 
@@ -24,13 +24,13 @@ endif
 environment:
 ifeq ($(conda_lock), yes)
 	conda-lock render -p $(plattform) $(lock_file)
-	conda create -n slurmlib --file conda-$(plattform).lock
+	conda create -n clustafari --file conda-$(plattform).lock
 	rm -rf conda-$(plattform).lock
 else
-	conda create -n slurmlib python=3.11
-	conda env update -n slurmlib --file $(conda_file)
+	conda create -n clustafari python=3.11
+	conda env update -n clustafari --file $(conda_file)
 endif
-	conda activate slurmlib
+	conda activate clustafari
 	pre-commit install
 
 environment_lock:

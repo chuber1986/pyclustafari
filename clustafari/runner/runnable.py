@@ -7,9 +7,9 @@ from typing import Any, Callable, Iterable, Mapping, Tuple
 
 import joblib
 
-from slurmlib.exceptions import RunnableStateError, StateError, TimeoutException
-from slurmlib.paths import SLURMLIB_DIR
-from slurmlib.utils import (
+from clustafari.exceptions import RunnableStateError, StateError, TimeoutException
+from clustafari.paths import CLUSTAFARI_DIR
+from clustafari.utils import (
     State,
     get_error_file,
     get_log_file,
@@ -93,7 +93,7 @@ class Runnable:
         try:
             function_data = (self.function, self.args, self.kwargs)
 
-            self.tempdir = SLURMLIB_DIR / f"{self._get_hash()}"
+            self.tempdir = CLUSTAFARI_DIR / f"{self._get_hash()}"
             self.tempdir.mkdir(exist_ok=True)
 
             self.tempfile = self.tempdir / f"{_get_function_name(self.function)}.joblib"
@@ -206,7 +206,7 @@ class Runnable:
 
         if self._state == RunState.FAILED:
             raise StateError(
-                "Job was cancelled. No result available.\nSlurmlib Log:\n"
+                "Job was cancelled. No result available.\nClustafari Log:\n"
                 f"{self._info.log}\n\nExecution Error:\n{str(self._info.error)}"
             )
 
@@ -214,6 +214,9 @@ class Runnable:
             return self._object, self._result
 
         return self._result
+
+    def get_function_name(self):
+        return _get_function_name(self.function)
 
     def __del__(self):
         del self._info

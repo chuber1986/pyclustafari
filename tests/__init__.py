@@ -1,1 +1,1 @@
-"""Unit test package for slurmlib."""
+"""Unit test package for pyclustafari."""

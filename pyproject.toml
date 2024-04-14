@@ -7,7 +7,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "slurmlib"
+name = "pyclustafari"
 version = "0.1.0"
 dependencies = [
     "pyprojroot",
@@ -30,11 +30,11 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/chuber1986/slurmlib"
-Documentation = "https://github.com/chuber1986/slurmlib"
-Repository = "https://github.com/chuber1986/slurmlib"
-"Bug Tracker" = "https://github.com/chuber1986/slurmlib/issues"
-Changelog = "https://github.com/chuber1986/slurmlib/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/chuber1986/pyclustafari"
+Documentation = "https://github.com/chuber1986/pyclustafari"
+Repository = "https://github.com/chuber1986/pyclustafari"
+"Bug Tracker" = "https://github.com/chuber1986/pyclustafari/issues"
+Changelog = "https://github.com/chuber1986/pyclustafari/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 test = [

@@ -5,7 +5,7 @@ import subprocess
 
 from typing_extensions import override
 
-from slurmlib.runner import BaseRunner, RunInformation, Runnable
+from clustafari.runner import BaseRunner, RunInformation, Runnable
 
 from .config import _SubprocessConfig
 

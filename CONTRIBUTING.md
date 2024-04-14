@@ -8,7 +8,7 @@ You can contribute in many ways:
 
 #### Report bugs
 
-Report bugs at https://github.com/chuber1986/slurmlib/issues.
+Report bugs at https://github.com/chuber1986/pyclustafari/issues.
 
 If you are reporting a bug, please include:
 
@@ -26,11 +26,11 @@ Look through the GitLab issues for features. Anything tagged with "enhancement" 
 
 #### Write Documentation
 
-SlurmLib could always use more documentation, whether as part of the official SlurmLib docs, in docstrings, or even on the web in blog posts, articles, and such.
+PyClustafari could always use more documentation, whether as part of the official PyClustafari docs, in docstrings, or even on the web in blog posts, articles, and such.
 
 #### Submit Feedback
 
-The best way to send feedback is to file an issue at https://github.com/chuber1986/slurmlib/issues.
+The best way to send feedback is to file an issue at https://github.com/chuber1986/pyclustafari/issues.
 
 If you are proposing a feature:
 
@@ -40,18 +40,18 @@ If you are proposing a feature:
 
 ## Get Started!
 
-Ready to contribute? Here's how to set up slurmlib for local development.
+Ready to contribute? Here's how to set up clustafari for local development.
 
-1. Fork the slurmlib repo on GitLab.
+1. Fork the `pyclustafari` repo on GitLab.
 2. Clone your fork locally (if possible use the SSH link, starting with "git://" instead of hte HTTPS link starting with "https://"):
     ```bash
-    $ git clone https://github.com/chuber1986/slurmlib
-    $ cd slurmlib
+    $ git clone https://github.com/chuber1986/pyclustafari
+    $ cd pyclustafari
     ```
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:
     ```bash
-    $ conda create -n slurmlib python=3.11
-    $ conda env update -n slurmlib --file environment.yaml
+    $ conda create -n clustafari python=3.11
+    $ conda env update -n clustafari --file environment.yaml
     ```
     or use:
     ```bash
@@ -98,14 +98,14 @@ Before you submit a merge request, check that it meets these guidelines:
 
 1. The merge request should include tests.
 2. If the merge request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in README.md.
-3. The merge request should work for Python 3.9, 3.10, and for PyPy. Check https://github.com/chuber1986/slurmlib/merge_requests and make sure that the tests pass for all supported Python versions.
+3. The merge request should work for Python 3.9, 3.10, and for PyPy. Check https://github.com/chuber1986/pyclustafari/merge_requests and make sure that the tests pass for all supported Python versions.
 
 ## Tips
 
 To run a subset of tests:
 
 ```bash
-$ pytest tests.test_slurmlib
+$ pytest tests
 ```
 
 ## Deploying

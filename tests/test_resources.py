@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Tests for `slurmlib` package."""
+"""Tests for `pyclustafari` package."""
 
 import pytest
 from resources import (

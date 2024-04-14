@@ -1,14 +1,13 @@
-"""Top-level package for SlurmLib."""
+"""Top-level package for PyClustafari."""
 
 from annotations import delayed
 from joblib import wrap_non_picklable_objects
 from pyprojroot import here
 
-from slurmlib.exceptions import RunnableStateError, StateError, TimeoutException
-from slurmlib.manager import ClusterContext
-from slurmlib.runner.dummy import DummyConfig, DummyRunner
-from slurmlib.runner.slurm import SlurmConfig, SlurmRunner
-from slurmlib.runner.subprocess import SubprocessConfig, SubprocessRunner
+from clustafari.manager import ClusterContext
+from clustafari.runner.dummy import DummyConfig, DummyRunner
+from clustafari.runner.slurm import SlurmConfig, SlurmRunner
+from clustafari.runner.subprocess import SubprocessConfig, SubprocessRunner
 
 here()
 
@@ -23,9 +22,6 @@ __exports__ = {
             DummyRunner,
             SlurmRunner,
             SubprocessRunner,
-            StateError,
-            TimeoutException,
-            RunnableStateError,
             wrap_non_picklable_objects,
             delayed,
         ]

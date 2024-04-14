@@ -1,22 +1,22 @@
-# SlurmLib
+# PyClustafari
 
-<!-- [![pypi](https://img.shields.io/pypi/v/slurmlib.svg)](https://pypi.org/project/slurmlib/) -->
-<!-- [![python](https://img.shields.io/pypi/pyversions/slurmlib.svg)](https://pypi.org/project/slurmlib/) -->
-<!-- [![Build Status](https://github.com/chuber1986/slurmlib/actions/workflows/dev.yml/badge.svg)](https://github.com/chuber1986/slurmlib/actions/workflows/dev.yml) -->
-<!-- [![codecov](https://codecov.io/gh/chuber1986/slurmlib/branch/main/graphs/badge.svg)](https://codecov.io/git/chuber1986/slurmlib) -->
+<!-- [![pypi](https://img.shields.io/pypi/v/pyclustafari.svg)](https://pypi.org/project/pyclustafari/) -->
+<!-- [![python](https://img.shields.io/pypi/pyversions/pyclustafari.svg)](https://pypi.org/project/pyclustafari/) -->
+<!-- [![Build Status](https://github.com/chuber1986/pyclustafari/actions/workflows/dev.yml/badge.svg)](https://github.com/chuber1986/pyclustafari/actions/workflows/dev.yml) -->
+<!-- [![codecov](https://codecov.io/gh/chuber1986/pyclustafari/branch/main/graphs/badge.svg)](https://codecov.io/git/chuber1986/pyclustafari) -->
 <!--  -->
 
 <!-- [Project](https://sites.google.com/) **|** [Paper](https://aip.scitation.org/doi/full/10.1063/5.0020404/) -->
 
 [Christian Huber](https://www.researchgate.net/profile/Christian-Huber-21)
 
-Runs Python functions on a SLURM cluster.
+Runs Python functions on a cluster infrastructure.
 
 [//]: # '# "Paper Title, Journal of whatever - special issue, 2020"'
 
--   Documentation: <https://github.com/chuber1986/slurmlib/>
--   GitLab: <https://github.com/chuber1986/slurmlib/>
-    [//]: # (\* PyPI: <https://pypi.org/project/slurmlib/>)
+-   Documentation: <https://github.com/chuber1986/pyclustafari/>
+-   GitLab: <https://github.com/chuber1986/pyclustafari/>
+    [//]: # (\* PyPI: <https://pypi.org/project/pyclustafari/>)
 -   Free software: MIT license
 
 ## Abstract
@@ -48,8 +48,8 @@ TBA
 Download repository:
 
 ```bash
-$ git clone https://github.com/chuber1986/slurmlib
-$ cd slurmlib
+$ git clone https://github.com/chuber1986/pyclustafari
+$ cd pyclustafari
 ```
 
 It's recommended to use the SSH link, starting with "git://" instead of hte HTTPS link starting with "https://".
@@ -57,8 +57,8 @@ It's recommended to use the SSH link, starting with "git://" instead of hte HTTP
 Create environment:
 
 ```bash
-$ conda create -n slurmlib python=3.11
-$ conda env update -n slurmlib --file environment.yaml
+$ conda create -n pyclustafari python=3.11
+$ conda env update -n pyclustafari --file environment.yaml
 ```
 
 ### pre-commit usage explicit (for devs only)
@@ -92,10 +92,10 @@ Adding the project directory to the PYTHONPATH works as well.
 ## Usage
 
 <a name="usage"></a>
-To use SlurmLib in a project
+To use PyClustafari in a project
 
 ```python
-import slurmlib
+import clustafari
 ```
 
 TBA

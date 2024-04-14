@@ -1,4 +1,4 @@
-""""Utility functions for Slurmlib."""
+""""Utility functions for PyClustafari."""
 
 import sys
 from contextlib import contextmanager

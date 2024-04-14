@@ -1,4 +1,4 @@
-name: slurmlib
+name: pyclustafari
 channels:
     - conda-forge
     - nodefaults
@@ -30,3 +30,8 @@ dependencies:
           # Project specific
           - joblib
           - pyslurm
+          - pyyaml
+          # Development
+          - matplotlib
+          - numpy
+          - scikit-learn

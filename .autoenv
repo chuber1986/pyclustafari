@@ -17,4 +17,4 @@
 source .env
 
 # Load conda environments
-conda activate slurmlib
+conda activate clustafari

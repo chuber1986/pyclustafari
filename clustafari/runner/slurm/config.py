@@ -4,8 +4,8 @@ from pathlib import Path
 
 from resources.resources import Resource, Resources
 
-from slurmlib.config import NodeConfig
-from slurmlib.paths import JOB_FILE, WORKERSTUB
+from clustafari.config import NodeConfig
+from clustafari.paths import JOB_FILE, WORKERSTUB
 
 
 class _SlurmConfig(NodeConfig):

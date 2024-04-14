@@ -83,12 +83,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "filename",
-        nargs="?",
         type=pathlib.Path,
         help="Path to the joblib file.",
-        default=Path(
-            "~/.slurmlib/16df065a5cb2793dd87127fc8f7cb41c/BaseMultilayerPerceptron.fit.joblib"
-        ),
     )
 
     return parser.parse_args()

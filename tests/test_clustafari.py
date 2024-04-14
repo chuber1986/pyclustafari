@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-"""Tests for `slurmlib` package."""
+"""Tests for `pyclustafari` package."""
 import os
 
 import pytest
 
-from slurmlib import ClusterContext, DummyConfig, SlurmConfig, SubprocessConfig
-from slurmlib.resources import CPUPerTaskResource, MemoryPerNodeResource
+from clustafari import ClusterContext, DummyConfig, SlurmConfig, SubprocessConfig
+from clustafari.resources import CPUPerTaskResource, MemoryPerNodeResource
 
 
 def fn0():

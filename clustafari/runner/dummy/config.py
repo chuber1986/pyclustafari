@@ -1,6 +1,6 @@
 """Cluster configuration basics."""
 
-from slurmlib.config import NodeConfig
+from clustafari.config import NodeConfig
 
 
 class _DummyConfig(NodeConfig):
