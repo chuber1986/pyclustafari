@@ -1,0 +1,71 @@
+CPU1_MEM8G:
+  - _target_: slurmlib.resources.MemoryPerNodeResource
+    _args_:
+      value: 8G
+  - _target_: slurmlib.resources.CPUPerTaskResource
+    _args_:
+      value: 1
+CPU4_MEM8G:
+  - _target_: slurmlib.resources.MemoryPerNodeResource
+    _args_:
+      value: 8G
+  - _target_: slurmlib.resources.CPUPerTaskResource
+    _args_:
+      value: 4
+CPU8_MEM32G:
+  - _target_: slurmlib.resources.MemoryPerNodeResource
+    _args_:
+      value: 32G
+  - _target_: slurmlib.resources.CPUPerTaskResource
+    _args_:
+      value: 8
+CPU4_MEM8G_GPU1S:
+  - _target_: slurmlib.resources.MemoryPerNodeResource
+    _args_:
+      value: 8G
+  - _target_: slurmlib.resources.CPUPerTaskResource
+    _args_:
+      value: 4
+  - _target_: slurmlib.resources.GenericResource
+    _args_:
+      value: shard:1
+CPU4_MEM8G_GPU2S:
+  - _target_: slurmlib.resources.MemoryPerNodeResource
+    _args_:
+      value: 8G
+  - _target_: slurmlib.resources.CPUPerTaskResource
+    _args_:
+      value: 4
+  - _target_: slurmlib.resources.GenericResource
+    _args_:
+      value: shard:2
+CPU8_MEM32G_GPU2S:
+  - _target_: slurmlib.resources.MemoryPerNodeResource
+    _args_:
+      value: 32G
+  - _target_: slurmlib.resources.CPUPerTaskResource
+    _args_:
+      value: 8
+  - _target_: slurmlib.resources.GenericResource
+    _args_:
+      value: shard:2
+CPU8_MEM32G_GPU1:
+  - _target_: slurmlib.resources.MemoryPerNodeResource
+    _args_:
+      value: 32G
+  - _target_: slurmlib.resources.CPUPerTaskResource
+    _args_:
+      value: 8
+  - _target_: slurmlib.resources.GPUsPerNodeResource
+    _args_:
+      value: 1
+CPU8_MEM32G_GPU2:
+  - _target_: slurmlib.resources.MemoryPerNodeResource
+    _args_:
+      value: 32G
+  - _target_: slurmlib.resources.CPUPerTaskResource
+    _args_:
+      value: 8
+  - _target_: slurmlib.resources.GPUsPerNodeResource
+    _args_:
+      value: 2
