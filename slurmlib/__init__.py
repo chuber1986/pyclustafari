@@ -1,5 +1,7 @@
 """Top-level package for SlurmLib."""
 
+from annotations import delayed
+from joblib import wrap_non_picklable_objects
 from pyprojroot import here
 
 from slurmlib.exceptions import RunnableStateError, StateError, TimeoutException
@@ -28,6 +30,11 @@ _classes = [
     SlurmRunner,
     SubprocessConfig.func,
     SubprocessRunner,
+]
+
+_annotations = [
+    wrap_non_picklable_objects,
+    delayed,
 ]
 
 _exceptions = [
