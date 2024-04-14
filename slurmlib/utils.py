@@ -39,21 +39,21 @@ class State(StrEnum):
         return cls.IDLE
 
 
-def get_result_file(file: Path):
+def get_result_file(file: Path) -> Path:
     return file.with_suffix(".res")
 
 
-def get_output_file(file: Path):
+def get_output_file(file: Path) -> Path:
     return file.with_suffix(".out")
 
 
-def get_error_file(file: Path):
+def get_error_file(file: Path) -> Path:
     return file.with_suffix(".err")
 
 
-def get_log_file(file: Path):
+def get_log_file(file: Path) -> Path:
     return file.with_suffix(".log")
 
 
-def get_state_file(file: Path):
+def get_state_file(file: Path) -> Path:
     return file.with_suffix(".state")

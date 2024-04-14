@@ -8,7 +8,7 @@ from pathlib import Path
 import yaml
 
 from slurmlib.paths import JOB_FILE, WORKERSTUB
-from slurmlib.runnable import Runner
+from slurmlib.runner import BaseRunner
 
 
 def _get_target(definition):
@@ -45,7 +45,7 @@ class NodeConfig(abc.ABC):
 
     def __init__(
         self,
-        runner: Runner,
+        runner: BaseRunner,
         resources: dict | None = None,
         jobfile: Path | str = JOB_FILE,
         workerstub: Path | str = WORKERSTUB,

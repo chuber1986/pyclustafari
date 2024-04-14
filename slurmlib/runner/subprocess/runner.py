@@ -3,7 +3,9 @@
 import logging
 import subprocess
 
-from slurmlib.runnable import RunInformation, Runnable
+from typing_extensions import override
+
+from slurmlib.runner import BaseRunner, RunInformation, Runnable
 
 from .config import _SubprocessConfig
 
@@ -12,18 +14,20 @@ COMMAND_TEMPLATE = r"python {} {}"
 __all__ = ["SubprocessRunner"]
 
 
-class SubprocessRunner:
+class SubprocessRunner(BaseRunner):
     """Runs a JobLib file in a new Python instance."""
 
     def __init__(self, config: _SubprocessConfig):
+        super().__init__()
         self.config = config
 
-    def run(self, runnable: Runnable) -> RunInformation:
+    @override
+    def _run(self, runobj: Runnable) -> RunInformation:
         logging.info("Execute Runner '%s'", self.__class__.__name__)
-        runnable.execute()
+        runobj.execute()
         info = RunInformation()
 
-        file = runnable.tempfile
+        file = runobj.tempfile
         command = COMMAND_TEMPLATE.format(
             str(self.config.workerstub), str(file)
         ).split()

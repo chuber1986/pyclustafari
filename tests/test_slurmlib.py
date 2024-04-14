@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from slurmlib import ClusterManager, DummyConfig, SlurmConfig, SubprocessConfig
+from slurmlib import ClusterContext, DummyConfig, SlurmConfig, SubprocessConfig
 from slurmlib.resources import CPUPerTaskResource, MemoryPerNodeResource
 
 
@@ -34,7 +34,7 @@ def fn3(a, b, c):
     ],
 )
 def test_apply(fn, args, kwargs):
-    with ClusterManager(DummyConfig()) as ctx:
+    with ClusterContext(DummyConfig()) as ctx:
         assert ctx.apply(fn, *args, **kwargs) == fn(*args, **kwargs)
 
 
@@ -48,7 +48,7 @@ def test_apply(fn, args, kwargs):
     ],
 )
 def test_map(fn, args, kwargs):
-    with ClusterManager(DummyConfig()) as ctx:
+    with ClusterContext(DummyConfig()) as ctx:
         res = ctx.map(fn, args, kwargs)
         for res, a, kwa in zip(res, args, kwargs):
             assert res == fn(*a, **kwa)
@@ -63,7 +63,7 @@ def test_map(fn, args, kwargs):
     ],
 )
 def test_map_fixed_kwargs(fn, args, kwargs, kwfixed):
-    with ClusterManager(DummyConfig()) as ctx:
+    with ClusterContext(DummyConfig()) as ctx:
         res = ctx.map(fn, args, kwargs, **kwfixed)
         for res, a, kwa in zip(res, args, kwargs):
             assert res == fn(*a, **{**kwfixed, **kwa})
@@ -78,7 +78,7 @@ def test_map_fixed_kwargs(fn, args, kwargs, kwfixed):
     ],
 )
 def test_map_noargs(fn, kwargs):
-    with ClusterManager(DummyConfig()) as ctx:
+    with ClusterContext(DummyConfig()) as ctx:
         res = ctx.map(fn, None, kwargs)
         for res, kwa in zip(res, kwargs):
             assert res == fn(**kwa)
@@ -89,7 +89,7 @@ def test_map_noargs(fn, kwargs):
     [(fn0, [tuple(), tuple()]), (fn1, [(1,), (2,)]), (fn2, [(1, 2), (2, 3)])],
 )
 def test_map_nokwargs(fn, args):
-    with ClusterManager(DummyConfig()) as ctx:
+    with ClusterContext(DummyConfig()) as ctx:
         res = ctx.map(fn, args, None)
         for res, a in zip(res, args):
             assert res == fn(*a)
@@ -105,7 +105,7 @@ def test_map_nokwargs(fn, args):
     ],
 )
 def test_subprocess_runner(fn, args, kwargs):
-    with ClusterManager(SubprocessConfig()) as ctx:
+    with ClusterContext(SubprocessConfig()) as ctx:
         assert ctx.apply(fn, *args, **kwargs) == fn(*args, **kwargs)
 
 
@@ -120,12 +120,12 @@ def test_subprocess_runner(fn, args, kwargs):
     ],
 )
 def test_slurm_runner(fn, args, kwargs):
-    with ClusterManager(SlurmConfig()) as ctx:
+    with ClusterContext(SlurmConfig()) as ctx:
         assert ctx.apply(fn, *args, **kwargs) == fn(*args, **kwargs)
 
 
 def test_slurm_runner_config():
-    with ClusterManager(
+    with ClusterContext(
         SlurmConfig(MemoryPerNodeResource(value="10"), CPUPerTaskResource(value=1))
     ) as ctx:
         assert ctx.apply(fn0) == 1

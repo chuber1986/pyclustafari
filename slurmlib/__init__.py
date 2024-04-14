@@ -2,7 +2,8 @@
 
 from pyprojroot import here
 
-from slurmlib.manager import ClusterManager
+from slurmlib.exceptions import RunnableStateError, StateError, TimeoutException
+from slurmlib.manager import ClusterContext
 from slurmlib.runner.dummy import DummyConfig, DummyRunner
 from slurmlib.runner.slurm import SlurmConfig, SlurmRunner
 from slurmlib.runner.subprocess import SubprocessConfig, SubprocessRunner
@@ -10,13 +11,29 @@ from slurmlib.runner.subprocess import SubprocessConfig, SubprocessRunner
 here()
 
 __all__ = [
-    ClusterManager.__name__,
+    ClusterContext.__name__,
     DummyConfig.func.__name__,
     DummyRunner.__name__,
     SlurmConfig.func.__name__,
     SlurmRunner.__name__,
     SubprocessConfig.func.__name__,
     SubprocessRunner.__name__,
+]
+
+_classes = [
+    ClusterContext,
+    DummyConfig.func,
+    DummyRunner,
+    SlurmConfig.func,
+    SlurmRunner,
+    SubprocessConfig.func,
+    SubprocessRunner,
+]
+
+_exceptions = [
+    StateError,
+    TimeoutException,
+    RunnableStateError,
 ]
 
 __author__ = """Christian Huber"""

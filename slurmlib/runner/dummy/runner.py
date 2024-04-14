@@ -3,30 +3,28 @@
 import logging
 from io import StringIO
 
-from slurmlib.runnable import RunInformation, Runnable
-from slurmlib.utils import redirect_io
+from typing_extensions import override
 
-from .config import _DummyConfig
+from slurmlib.runner import BaseRunner, RunInformation, Runnable
+from slurmlib.utils import redirect_io
 
 COMMAND_TEMPLATE = r"python {} {}"
 
 __all__ = ["DummyRunner"]
 
 
-class DummyRunner:
+class DummyRunner(BaseRunner):
     """Runs a JobLib file in a new Python instance."""
 
-    def __init__(self, config: _DummyConfig):
-        self.config = config
-
-    def run(self, runnable: Runnable) -> RunInformation:
+    @override
+    def _run(self, runobj: Runnable) -> RunInformation:
         logging.info("Execute Runner '%s'", self.__class__.__name__)
-        runnable.execute()
+        runobj.execute()
 
         info = RunInformation()
-        fn = runnable.function
-        args = runnable.args
-        kwargs = runnable.kwargs
+        fn = runobj.function
+        args = runobj.args
+        kwargs = runobj.kwargs
 
         out = StringIO()
         err = StringIO()
@@ -40,5 +38,5 @@ class DummyRunner:
         info.output = str(out)
         info.error += str(err)
 
-        runnable.result = info.result
+        runobj.result = info.result
         return info
