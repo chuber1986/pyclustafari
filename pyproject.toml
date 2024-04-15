@@ -6,8 +6,8 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-[project]
-name = "pyclustafari"
+[pyclustafari]
+name = "clustafari"
 version = "0.1.0"
 dependencies = [
     "pyprojroot",
@@ -30,14 +30,14 @@ classifiers = [
     "Programming Language :: Python"
 ]
 
-[project.urls]
+[pyclustafari.urls]
 Homepage = "https://github.com/chuber1986/pyclustafari"
 Documentation = "https://github.com/chuber1986/pyclustafari"
 Repository = "https://github.com/chuber1986/pyclustafari"
 "Bug Tracker" = "https://github.com/chuber1986/pyclustafari/issues"
 Changelog = "https://github.com/chuber1986/pyclustafari/blob/main/CHANGELOG.md"
 
-[project.optional-dependencies]
+[pyclustafari.optional-dependencies]
 test = [
     "bump2version>=1.0.1",
     "pre-commit>=2.12.0",

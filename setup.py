@@ -10,8 +10,6 @@ with open("README.md") as readme_file:
 with open("CHANGELOG.md") as history_file:
     history = history_file.read()
 
-requirements: list[str] = []
-
 test_requirements = [
     "bump2version>=1.0.1",
     "pre-commit>=2.12.0",
@@ -42,7 +40,6 @@ setup(
         "Programming Language :: Python :: 3.11",
     ],
     description="Runs Python function on a cluster.",
-    install_requires=requirements,
     license="MIT license",
     long_description=readme + "\n\n" + history,
     include_package_data=True,
