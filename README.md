@@ -12,12 +12,11 @@
 
 Runs Python functions on a cluster infrastructure.
 
-[//]: # '# "Paper Title, Journal of whatever - special issue, 2020"'
-
 -   Documentation: <https://github.com/chuber1986/pyclustafari/>
 -   GitLab: <https://github.com/chuber1986/pyclustafari/>
-    [//]: # (\* PyPI: <https://pypi.org/project/pyclustafari/>)
 -   Free software: MIT license
+
+[//]: # (\* PyPI: <https://pypi.org/project/pyclustafari/>)
 
 ## Abstract
 

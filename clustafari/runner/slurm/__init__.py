@@ -2,9 +2,10 @@
 
 import logging
 from functools import partial
+from importlib.resources import files
 
 from clustafari.config import NodeConfig
-from clustafari.paths import CLUSTAFARI_DIR, ROOT
+from clustafari.paths import CLUSTAFARI_DIR
 from clustafari.resources import (
     CPUPerGPUResource,
     CPUPerTaskResource,
@@ -30,7 +31,7 @@ from .runner import SlurmRunner
 SlurmConfig = partial(_SlurmConfig, runner_cls=SlurmRunner)
 
 
-def create_config(
+def _create_config(
     mem_per_node=None,
     mem_per_cpu=None,
     mem_per_gpu=None,
@@ -68,22 +69,23 @@ def create_config(
     ]
 
     ress = [
-        CPUPerGPUResource,
-        CPUPerTaskResource,
-        ExcludedNodesResource,
-        GenericResource,
-        GPUsPerNodeResource,
-        GPUsPerTaskResource,
-        GPUsResource,
+        MemoryPerNodeResource,
         MemoryPerCPUResource,
         MemoryPerGPUResource,
-        MemoryPerNodeResource,
-        NTasksPerGPUResource,
-        NTasksPerNodeResource,
-        NTasksResource,
-        PartitionResource,
+        CPUPerTaskResource,
+        CPUPerGPUResource,
         RequiredNodesResource,
+        ExcludedNodesResource,
+        PartitionResource,
+        GenericResource,
+        NTasksResource,
+        NTasksPerNodeResource,
+        NTasksPerGPUResource,
+        GPUsResource,
+        GPUsPerTaskResource,
+        GPUsPerNodeResource,
     ]
+
     for res, val in zip(ress, vals):
         if val is not None:
             resources.append(res(val))
@@ -91,25 +93,48 @@ def create_config(
     return SlurmConfig(*resources)
 
 
-def load_default_configurations():
+defaults = {}
+
+
+def _load_default_configurations():
     default_fname = "slurm_defaults.yaml"
     file = CLUSTAFARI_DIR / default_fname
     if not file.exists():
         logging.warning("No default configuration found at '%s'", str(file))
         logging.warning("Restore defaults from project defaults.")
 
-        pdefaults = ROOT / "config" / default_fname
+        pdefaults = files("clustafari") / "config" / default_fname
         file.write_bytes(pdefaults.read_bytes())
 
-    defaults = NodeConfig.load_defaults(file)
-    defaults = {f"CFG_{k}": SlurmConfig(*v) for k, v in defaults.items()}
+    cfgs = NodeConfig.load_defaults(file)
+    cfgs = {f"CFG_SLURM_{k}": SlurmConfig(*v) for k, v in cfgs.items()}
 
-    setattr(SlurmConfig, "get_config_names", lambda: list(defaults.keys()))
-    setattr(SlurmConfig, "get_config", lambda name: defaults[name])
-    setattr(SlurmConfig, "create_config", create_config)
+    defaults.update(cfgs)
 
     for k, v in defaults.items():
         setattr(SlurmConfig, k, v)
 
+    return defaults
 
-load_default_configurations()
+
+def _get_config_names():
+    if not defaults:
+        _load_default_configurations()
+    return list(defaults.keys())
+
+
+def _get_configs():
+    if not defaults:
+        _load_default_configurations()
+    return defaults
+
+
+def _get_config(name):
+    if not defaults:
+        _load_default_configurations()
+    return defaults[name]
+
+
+setattr(SlurmConfig, "get_config_names", _get_config_names)
+setattr(SlurmConfig, "get_config", _get_config)
+setattr(SlurmConfig, "create_config", _create_config)
