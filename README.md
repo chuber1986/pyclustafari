@@ -20,7 +20,7 @@ Runs Python functions on a cluster infrastructure.
 
 ## Abstract
 
-TBA
+Deployes single Python functions to an compute cluster and returns the results of the computation. This is intended specifically for interactive Python session and Jupyter notebooks.
 
 ## Table of Contents
 
@@ -36,6 +36,8 @@ This framework is inspiered by the Python 'multiprocessing' library.
 It allows to execute single functions in an cluster envitonment. Therefore, a context manager provides 'apply', 'apply_async', 'map' and 'map_async' methods. The config manager can by configurated to request specific resources from an cluster node. While 'apply' and 'map', block the calling Python process to wait for the result. The 'async' variants othe these method allow to contiue working in the caller process and grab the result later.
 
 The project currently supports DummyCluster (runs the project in the current Python environment), Subprocess (runs the function on the same machine in an new Python instance), and Slurm (deployes the function to an node on an Slurm cluster; reequies PySlurm the version matches the Slurm version of the cluster). 
+
+The function, parameters and context data will be serialized and stored on a shared folder of the cluster. On the compute node the serialized data will be restores and the function executed. All resutls and contex information are again serialized and restored by the caller side.
 
 ## Requirements and Dependencies
 
