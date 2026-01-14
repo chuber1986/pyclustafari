@@ -2,7 +2,7 @@
 """Tests for `pyclustafari` package."""
 
 import pytest
-from resources import (
+from clustafari.resources import (
     CPUPerGPUResource,
     CPUPerTaskResource,
     ExcludedNodesResource,

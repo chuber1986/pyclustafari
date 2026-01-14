@@ -2,6 +2,7 @@
 
 if [[ "$#" -ne 4 ]]; then
     echo 'Usage: $0 <environment-type> <python-environment> <path-to-workerstub> <joblib-file>'
+    echo "  envitonment-type: 0 ... system interpreter"
     echo "  envitonment-type: 1 ... system interpreter"
     echo "  envitonment-type: 2 ... conda environment"
     echo "  envitonment-type: 3 ... venv environment"
@@ -13,14 +14,16 @@ interpreter="$2"
 workerstub="$3"
 joblibfile="$4"
 
-if [[ $envtype -eq 1 ]]; then
+if [[ $envtype -eq 0 ]]; then
     $interpreter $workerstub $joblibfile
+elif [[ $envtype -eq 1 ]]; then
+    python $workerstub $joblibfile
 elif [[ $envtype -eq 2 ]]; then
     conda activate $condaname
     $interpreter $workerstub $joblibfile
 elif [[ $envtype -eq 3 ]]; then
-    echo "Venv environment not supported."
-    exit -1
+    source $(dirname $interpreter)/activate
+    $interpreter $workerstub $joblibfile
 else
     echo "Invalid environment type: $envtype"
     exit -1

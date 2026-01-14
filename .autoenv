@@ -15,6 +15,3 @@
 
 # Load .env file
 source .env
-
-# Load conda environments
-conda activate clustafari

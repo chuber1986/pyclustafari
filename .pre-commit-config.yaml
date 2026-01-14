@@ -1,67 +1,63 @@
-default_language_version:
-    python: python3.11
-
-exclude: "^$|mkdocs.yml|.git|.idea"
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
 
 repos:
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.5.0
-      hooks:
-          # list of supported hooks: https://pre-commit.com/hooks.html
-          - id: check-added-large-files
-            args: ["--maxkb=10240"]
-          - id: check-case-conflict
-          - id: check-json
-          - id: check-yaml
-          - id: check-toml
-          - id: check-xml
-          - id: trailing-whitespace
-          - id: mixed-line-ending
-          - id: end-of-file-fixer
-          - id: detect-private-key
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # list of supported hooks: https://pre-commit.com/hooks.html
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-docstring-first
+      - id: check-yaml
+      - id: debug-statements
+      - id: detect-private-key
+      - id: check-executables-have-shebangs
+      - id: check-toml
+      - id: check-case-conflict
+      - id: check-added-large-files
 
+  # Check commit message
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
 
-    - repo: https://github.com/PyCQA/isort
-      rev: 5.13.2
-      hooks:
-          - id: isort
+  # lock package requirements
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.7.15
+    hooks:
+      - id: uv-lock
+      - id: uv-sync
 
-    - repo: https://github.com/psf/black
-      rev: 24.3.0
-      hooks:
-          - id: black
-          - id: black-jupyter
+  # shell scripts linter
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
 
-    # clear notebook outputs
-    - repo: https://github.com/kynan/nbstripout
-      rev: 0.7.1
-      hooks:
-          - id: nbstripout
+  # md formatting
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.22
+    hooks:
+      - id: mdformat
+        args: ["--number"]
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-tables
+          - mdformat_frontmatter
 
-    # python type checker
-    - repo: https://github.com/pre-commit/mirrors-mypy
-      rev: v1.9.0
-      hooks:
-          - id: mypy
-            exclude: tests/
-            additional_dependencies: ["types-requests", "types-PyYAML"]
-            args: ["--ignore-missing-imports", "--check-untyped-defs"]
+  # jupyter notebook cell output clearing
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
 
-    # python code analysis
-    - repo: https://github.com/pycqa/flake8
-      rev: 7.0.0
-      hooks:
-          - id: flake8
-
-    - repo: https://github.com/pre-commit/mirrors-pylint
-      rev: v3.0.0a5
-      hooks:
-          - id: pylint
-
-    # Check commit message
-    - repo: https://github.com/compilerla/conventional-pre-commit
-      rev: v3.2.0
-      hooks:
-          - id: conventional-pre-commit
-            stages: [commit-msg]
-            args: [] # optional: list of Conventional Commits types to allow
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.1
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
