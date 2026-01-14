@@ -12,19 +12,19 @@ from clustafari.runner.subprocess import SubprocessConfig, SubprocessRunner
 here()
 
 __exports__ = {
-        item.__name__: item
-        for item in [
-            DummyConfig,
-            SlurmConfig,
-            SubprocessConfig,
-            ClusterContext,
-            DummyRunner,
-            SlurmRunner,
-            SubprocessRunner,
-            wrap_non_picklable_objects,
-            delayed,
-        ]
-    }
+    item.__name__: item
+    for item in [
+        DummyConfig,
+        SlurmConfig,
+        SubprocessConfig,
+        ClusterContext,
+        DummyRunner,
+        SlurmRunner,
+        SubprocessRunner,
+        wrap_non_picklable_objects,
+        delayed,
+    ]
+}
 
 
 def _set_attributes(attributes: dict):

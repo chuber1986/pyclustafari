@@ -11,6 +11,10 @@ repos:
       - id: end-of-file-fixer
       - id: check-docstring-first
       - id: check-yaml
+        exclude: mkdocs.yml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
       - id: debug-statements
       - id: detect-private-key
       - id: check-executables-have-shebangs
@@ -61,3 +65,9 @@ repos:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
+
+  - repo: https://github.com/allganize/ty-pre-commit
+    rev: v0.0.11
+    hooks:
+      - id: ty-check
+        args: ["--python", ".venv"]

@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def _get_function_name(fn: Callable):
     if hasattr(fn, "func"):
-        return _get_function_name(fn.func) # type: ignore  # noqa: PGH003
+        return _get_function_name(fn.func)  # type: ignore  # noqa: PGH003
 
     assert hasattr(fn, "__qualname__"), "Function has no __qualname__ attribute."
     return fn.__qualname__
@@ -35,7 +35,7 @@ def _get_function_name(fn: Callable):
 
 def _get_partial_arguments(fn: Callable) -> tuple[tuple, Mapping]:
     if hasattr(fn, "func") and hasattr(fn, "args") and hasattr(fn, "keywords"):
-        return fn.args, fn.keywords # type: ignore  # noqa: PGH003
+        return fn.args, fn.keywords  # type: ignore  # noqa: PGH003
 
     return (), {}
 

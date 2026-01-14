@@ -13,7 +13,7 @@ $ pip install pyclustafari
 
 This is the preferred method to install PyClustafari, as it will always install the most recent stable release.
 
-If you don't have [pip][] installed, this [Python installation guide][]
+If you don't have [pip] installed, this [Python installation guide]
 can guide you through the process.
 
 ## From source
@@ -36,4 +36,4 @@ $ pip install .
 ```
 
 [pip]: https://pip.pypa.io
-[Python installation guide]: http://docs.python-guide.org/en/latest/starting/installation/
+[python installation guide]: http://docs.python-guide.org/en/latest/starting/installation/

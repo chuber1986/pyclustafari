@@ -12,9 +12,9 @@ Report bugs at https://github.com/chuber1986/pyclustafari/issues.
 
 If you are reporting a bug, please include:
 
--   Your operating system name and version.
--   Any details about your local setup that might be helpful in troubleshooting.
--   Detailed steps to reproduce the bug.
+- Your operating system name and version.
+- Any details about your local setup that might be helpful in troubleshooting.
+- Detailed steps to reproduce the bug.
 
 #### Fix Bugs
 
@@ -34,61 +34,68 @@ The best way to send feedback is to file an issue at https://github.com/chuber19
 
 If you are proposing a feature:
 
--   Explain in detail how it would work.
--   Keep the scope as narrow as possible, to make it easier to implement.
--   Remember that this is a volunteer-driven project, and that contributions are welcome :)
+- Explain in detail how it would work.
+- Keep the scope as narrow as possible, to make it easier to implement.
+- Remember that this is a volunteer-driven project, and that contributions are welcome :)
 
 ## Get Started!
 
 Ready to contribute? Here's how to set up clustafari for local development.
 
 1. Fork the `pyclustafari` repo on GitLab.
+
 2. Clone your fork locally (if possible use the SSH link, starting with "git://" instead of hte HTTPS link starting with "https://"):
-    ```bash
-    $ git clone https://github.com/chuber1986/pyclustafari
-    $ cd pyclustafari
-    ```
+
+   ```bash
+   $ git clone https://github.com/chuber1986/pyclustafari
+   $ cd pyclustafari
+   ```
+
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:
-    ```bash
-    $ conda create -n clustafari python=3.11
-    $ conda env update -n clustafari --file environment.yaml
-    ```
-    or use:
-    ```bash
-    $ make environment
-    ```
+
+   ```bash
+   $ conda create -n clustafari python=3.11
+   $ conda env update -n clustafari --file environment.yaml
+   ```
+
+   or use:
+
+   ```bash
+   $ make environment
+   ```
+
 4. Install pre-commit hook:
    Once after clone the replository run:
 
-    ```bash
-    $ pre-commit install
-    ```
+   ```bash
+   $ pre-commit install
+   ```
 
 5. Create a branch for local development:
 
-    ```bash
-    $ git checkout -b name-of-your-bugfix-or-feature
-    ```
+   ```bash
+   $ git checkout -b name-of-your-bugfix-or-feature
+   ```
 
-    Now you can make your changes locally.
+   Now you can make your changes locally.
 
 6. When you're done making changes, check that your changes pass the tests, including testing other Python versions with tox:
 
-    ```bash
-    $ python setup.py pytest  # test using the current environment
-    $ pytest                  # alternative command
-    $ tox                     # test on multiple environments
-    ```
+   ```bash
+   $ python setup.py pytest  # test using the current environment
+   $ pytest                  # alternative command
+   $ tox                     # test on multiple environments
+   ```
 
-    To get flake8 and tox, just pip install them into your virtualenv.
+   To get flake8 and tox, just pip install them into your virtualenv.
 
 7. Commit your changes and push your branch to GitLab:
 
-    ```bash
-    $ git add .
-    $ git commit -m "Your detailed description of your changes."
-    $ git push origin name-of-your-bugfix-or-feature
-    ```
+   ```bash
+   $ git add .
+   $ git commit -m "Your detailed description of your changes."
+   $ git push origin name-of-your-bugfix-or-feature
+   ```
 
 8. Submit a pull request through the GitLab website.
 

@@ -1,9 +1,13 @@
 # PyClustafari
 
 <!-- [![pypi](https://img.shields.io/pypi/v/pyclustafari.svg)](https://pypi.org/project/pyclustafari/) -->
+
 <!-- [![python](https://img.shields.io/pypi/pyversions/pyclustafari.svg)](https://pypi.org/project/pyclustafari/) -->
+
 <!-- [![Build Status](https://github.com/chuber1986/pyclustafari/actions/workflows/dev.yml/badge.svg)](https://github.com/chuber1986/pyclustafari/actions/workflows/dev.yml) -->
+
 <!-- [![codecov](https://codecov.io/gh/chuber1986/pyclustafari/branch/main/graphs/badge.svg)](https://codecov.io/git/chuber1986/pyclustafari) -->
+
 <!--  -->
 
 <!-- [Project](https://sites.google.com/) **|** [Paper](https://aip.scitation.org/doi/full/10.1063/5.0020404/) -->
@@ -12,11 +16,9 @@
 
 Runs Python functions on a cluster infrastructure.
 
--   Documentation: <https://github.com/chuber1986/pyclustafari/>
--   GitLab: <https://github.com/chuber1986/pyclustafari/>
--   Free software: MIT license
-
-[//]: # (\* PyPI: <https://pypi.org/project/pyclustafari/>)
+- Documentation: <https://github.com/chuber1986/pyclustafari/>
+- GitLab: <https://github.com/chuber1986/pyclustafari/>
+- Free software: MIT license
 
 ## Abstract
 
@@ -35,7 +37,7 @@ Deployes single Python functions to an compute cluster and returns the results o
 This framework is inspiered by the Python 'multiprocessing' library.
 It allows to execute single functions in an cluster envitonment. Therefore, a context manager provides 'apply', 'apply_async', 'map' and 'map_async' methods. The config manager can by configurated to request specific resources from an cluster node. While 'apply' and 'map', block the calling Python process to wait for the result. The 'async' variants othe these method allow to contiue working in the caller process and grab the result later.
 
-The project currently supports DummyCluster (runs the project in the current Python environment), Subprocess (runs the function on the same machine in an new Python instance), and Slurm (deployes the function to an node on an Slurm cluster; reequies PySlurm the version matches the Slurm version of the cluster). 
+The project currently supports DummyCluster (runs the project in the current Python environment), Subprocess (runs the function on the same machine in an new Python instance), and Slurm (deployes the function to an node on an Slurm cluster; reequies PySlurm the version matches the Slurm version of the cluster).
 
 The function, parameters and context data will be serialized and stored on a shared folder of the cluster. On the compute node the serialized data will be restores and the function executed. All resutls and contex information are again serialized and restored by the caller side.
 
@@ -43,9 +45,9 @@ The function, parameters and context data will be serialized and stored on a sha
 
 <a name="requirements-and-dependencies"></a>
 
--   Tested on Linux
--   PySlurm 25.11
--   Python (tested with Python3.14)
+- Tested on Linux
+- PySlurm 25.11
+- Python (tested with Python3.14)
 
 ## Getting started
 
@@ -66,7 +68,6 @@ $ uv sync
 ```
 
 If 'pyslurm' cant be installed. use 'uv env && uv pip install pip' to create an empty environment. Manually install 'pyslurm' with the version matching the Slurm version of you cluster. Afterwards, rerun 'uv sync'.
-
 
 ### pre-commit usage explicit (for devs only)
 
@@ -130,7 +131,7 @@ res = [run.get(blocking=True) for run in runs]
 # Use default cluster configuration
 SlurmConfig.get_config_names()
 cfg = SlurmConfig.get_config("CFG_CPU4_MEM8G_GPU2S")
-cfg = SlurmConfig.CFG_CPU1_MEM8G 
+cfg = SlurmConfig.CFG_CPU1_MEM8G
 # Create a new cluster configuration
 cfg = SlurmConfig(
     CPUPerTaskResource(3),

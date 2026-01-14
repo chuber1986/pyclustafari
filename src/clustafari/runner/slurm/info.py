@@ -22,7 +22,7 @@ class SlurmInformation(RunInformation):
         job = Job.load(self.jobid)
         return job.to_dict()
 
-    @RunInformation.output.getter  # type: ignore[attr-defined]
+    @RunInformation.output.getter
     def output_(self) -> str | None:
         """Get standard output of the job."""
         job = Job.load(self.jobid)
@@ -34,7 +34,7 @@ class SlurmInformation(RunInformation):
 
         return self._output
 
-    @RunInformation.error.getter  # type: ignore[attr-defined]
+    @RunInformation.error.getter
     def error_(self) -> str | None:
         """Get error output of the job."""
         job = Job.load(self.jobid)
