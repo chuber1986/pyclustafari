@@ -152,14 +152,14 @@ class Runnable:
 
         return State(content.lower())
 
-    def _read_job_file(self, file: Path | None) -> str:
+    def _read_job_file(self, file: Path | None) -> tuple[Any, Any]:
         if file is None or not file.exists():
-            return ""
+            return None, None
 
         try:
             return joblib.load(file)
         except EOFError:
-            return ""
+            return None, None
 
     def _read_file(self, file: Path | None) -> str:
         if file is None or not file.exists():
