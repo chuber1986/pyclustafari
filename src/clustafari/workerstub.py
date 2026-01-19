@@ -74,15 +74,16 @@ def execute(arguments: Any) -> None:
             redirect_io(out, err),
         ):
             result = fn(*args, **kwargs)
-    except Exception as e:  # noqa: BLE001
-        utils.log(str(e))
-        utils.set_state(State.FAILED)
-    finally:
         utils.log("Write output")
         utils.set_state(State.DUMP_RESULT)
         joblib.dump((fnobj, result), get_result_file(file))
         utils.log("Execution finished")
         utils.set_state(State.FINISHED)
+    except Exception as e:  # noqa: BLE001
+        utils.log(str(e))
+        utils.set_state(State.FAILED)
+    finally:
+        utils.log("Workerstub terminated")
 
 
 def parse_arguments() -> argparse.Namespace:
