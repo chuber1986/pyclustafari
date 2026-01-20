@@ -52,4 +52,5 @@ class SlurmRunner(BaseRunner):
         )
 
         jobid = desc.submit()
-        return SlurmInformation(jobid)
+        runobj.info = SlurmInformation(jobid)
+        return runobj.info

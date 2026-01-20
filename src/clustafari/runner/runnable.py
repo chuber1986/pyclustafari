@@ -91,6 +91,15 @@ class Runnable:
         self._result = result
         self._state = RunState.FINISHED
 
+    @property
+    def info(self) -> Any:
+        """Return the result of the execution."""
+        return self._info
+
+    @info.setter
+    def info(self, info: Any) -> None:
+        self._info = info
+
     def execute(self) -> None:
         """Prepare the executable for deployment."""
         if self._state != RunState.INITIALIZED:
