@@ -74,20 +74,28 @@ class Runnable:
         logger.info("Create Runnable: %s", repr(self))
 
     @property
+    def state(self) -> RunState:
+        """Return the current execution state."""
+        return self._state
+
+    @property
     def result(self) -> Any:
         """Return the result of the execution."""
         return self._result
 
-    @result.setter
-    def result(self, result: Any) -> None:
-        if self.result is not None:
-            msg = "Results already set."
-            raise RunnableStateError(msg)
+    def fail(self, message: str) -> None:
+        """Mark the execution as failed with an error message."""
+        if self._state in (RunState.INITIALIZED, RunState.READY):
+            self._state = RunState.FAILED
+            self._info.error += message
 
+    def finish(self, obj: Any, result: Any) -> None:
+        """Mark the execution as finished with an owning object and a result."""
         if self._state != RunState.READY:
-            msg = "Result can only be set by an RUNNING Runnable."
+            msg = "A Runnable can only be finished in the READY state."
             raise RunnableStateError(msg)
 
+        self._object = obj
         self._result = result
         self._state = RunState.FINISHED
 
@@ -127,15 +135,14 @@ class Runnable:
             joblib.dump(function_data, self.tempfile)
             self._state = RunState.READY
         except RuntimeError as err:
-            self._state = RunState.FAILED
-            self._info.log += str(err)
+            self.fail(str(err))
 
     def _get_hash(self) -> str | None:
         return joblib.hash((self.function, self.args, self.kwargs, self._timestamp))
 
     def is_finished(self) -> bool:
         """Return whether the execution is finished."""
-        if self._state == RunState.FINISHED:
+        if self._state in (RunState.FINISHED, RunState.FAILED):
             return True
 
         return self._state == RunState.READY and self._read_state_file() in [
@@ -200,26 +207,21 @@ class Runnable:
 
         self._delete_temp_files()
 
-    def get(self, blocking: bool = False, timeout: int = -1) -> Any:  # noqa: FBT001, FBT002
+    def get(self, blocking: bool = False, timeout: float = -1) -> Any:  # noqa: FBT001, FBT002
         """Retrieve the result of the execution.
 
-        If 'blocking', blocks until the result is ready. If 'blocking' and 'timeout' is set, raises a TimeoutException
-        if the result is not ready within the timeout period.
+        If 'blocking', blocks until the result is ready. If 'blocking' and 'timeout' is set to a positive value,
+        raises a TimeoutException if the result is not ready within the timeout period.
         """
         if self._state == RunState.INITIALIZED:
-            msg = "Job was not stated."
+            msg = "Job was not started."
             raise RunnableStateError(msg)
 
-        runtime = 0.0
+        deadline = time.monotonic() + timeout if timeout > 0 else None
         while not self.is_finished() and blocking:
-            if self._state == RunState.FAILED:
-                msg = "Execution failed. No result available."
-                raise RunnableStateError(msg)
-
             time.sleep(0.1)
-            runtime += 0.1
 
-            if 0 < timeout < runtime:
+            if deadline is not None and time.monotonic() > deadline:
                 msg = "Result not ready. Timeout reached."
                 raise TimeoutException(msg)
 
@@ -232,7 +234,7 @@ class Runnable:
 
         if self._state == RunState.FAILED:
             msg = (
-                "Job was cancelled. No result available.\nClustafari Log:\n"
+                "Execution failed. No result available.\nClustafari Log:\n"
                 f"{self._info.log}\n\nExecution Error:\n{self._info.error!s}"
             )
             raise StateError(msg)

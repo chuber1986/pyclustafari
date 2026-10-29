@@ -10,7 +10,7 @@ CLUSTAFARI_DIR.mkdir(exist_ok=True)
 
 ROOT = Path(__file__).parent.parent.parent
 JOB_FILE = ROOT / "scripts" / "clustafari.job"
-WORKERSTUB = workerstub.__file__
+WORKERSTUB = Path(workerstub.__file__ or "")
 
 
 def _find_path_to(prog: str) -> Path:

@@ -34,12 +34,12 @@ Deployes single Python functions to an compute cluster and returns the results o
 ## Introduction
 
 <a name="introduction"></a>
-This framework is inspiered by the Python 'multiprocessing' library.
-It allows to execute single functions in an cluster envitonment. Therefore, a context manager provides 'apply', 'apply_async', 'map' and 'map_async' methods. The config manager can by configurated to request specific resources from an cluster node. While 'apply' and 'map', block the calling Python process to wait for the result. The 'async' variants othe these method allow to contiue working in the caller process and grab the result later.
+This framework is inspired by the Python 'multiprocessing' library.
+It allows executing single functions in a cluster environment. A context manager provides 'apply', 'apply_async', 'map' and 'map_async' methods. The config can be configured to request specific resources from a cluster node. 'apply' and 'map' block the calling Python process to wait for the result. The 'async' variants of these methods allow continuing to work in the caller process and grab the result later.
 
-The project currently supports DummyCluster (runs the project in the current Python environment), Subprocess (runs the function on the same machine in an new Python instance), and Slurm (deployes the function to an node on an Slurm cluster; reequies PySlurm the version matches the Slurm version of the cluster).
+The project currently supports Dummy (runs the function in the current Python environment), Subprocess (runs the function on the same machine in a new Python instance), and Slurm (deploys the function to a node on a Slurm cluster; requires PySlurm, whose version must match the cluster's Slurm version).
 
-The function, parameters and context data will be serialized and stored on a shared folder of the cluster. On the compute node the serialized data will be restores and the function executed. All resutls and contex information are again serialized and restored by the caller side.
+The function, parameters and context data are serialized and stored on a shared folder of the cluster. On the compute node the serialized data is deserialized and the function executed. All results and context information are again serialized and restored by the caller side.
 
 ## Requirements and Dependencies
 
@@ -59,7 +59,7 @@ $ git clone https://github.com/chuber1986/pyclustafari
 $ cd pyclustafari
 ```
 
-It's recommended to use the SSH link, starting with "git://" instead of hte HTTPS link starting with "https://".
+It's recommended to use the SSH link, starting with "git://" instead of the HTTPS link starting with "https://".
 
 Create environment:
 
@@ -67,7 +67,7 @@ Create environment:
 $ uv sync
 ```
 
-If 'pyslurm' cant be installed. use 'uv env && uv pip install pip' to create an empty environment. Manually install 'pyslurm' with the version matching the Slurm version of you cluster. Afterwards, rerun 'uv sync'.
+If 'pyslurm' can't be installed, use 'uv env && uv pip install pip' to create an empty environment. Manually install 'pyslurm' with the version matching the Slurm version of your cluster. Afterwards, rerun 'uv sync'.
 
 ### pre-commit usage explicit (for devs only)
 
@@ -77,7 +77,7 @@ $ pre-commit run -a
 
 ### pre-commit usage during git commit
 
-Once after clone the replository run:
+Once after cloning the repository run:
 
 ```bash
 $ pre-commit install
@@ -114,13 +114,13 @@ with ClusterContext(SlurmConfig()) as ctx:
 # Run a function that changes it's owning object
 with ClusterContext(SlurmConfig()) as ctx:
     obj, _ = ctx.apply(obj.function, "param1", return_object=True)
-# Run a function asyncron and get the result
+# Run a function asynchronous and get the result
 with ClusterContext(SlurmConfig()) as ctx:
     run = ctx.apply_async(function, "param1")
 ...
 res = run.get(blocking=True)
 plot_results(*res)
-# Run a function asyncroun on 2 sets of parameter asyncron and get the result
+# Run a function asynchronously on 2 sets of parameters and get the results
 runs = ctx.map_async(
     function,
     args=[["param1"], ["param2"]],

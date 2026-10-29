@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Tests for `pyclustafari` package."""
 import os
+import time
 
 import pytest
 
@@ -129,3 +130,74 @@ def test_slurm_runner_config():
         SlurmConfig(MemoryPerNodeResource(value="10"), CPUPerTaskResource(value=1))
     ) as ctx:
         assert ctx.apply(fn0) == 1
+
+
+def boom():
+    raise ValueError("kaboom")
+
+
+def slow(a):
+    time.sleep(a)
+    return a + 1
+
+
+class Acc:
+    def __init__(self):
+        self.x = 10
+
+    def add(self, n):
+        self.x += n
+        return self.x
+
+
+def test_dummy_runner_failure_raises_state_error():
+    from clustafari.exceptions import StateError
+
+    with ClusterContext(DummyConfig()) as ctx:
+        run = ctx.apply_async(boom)
+        with pytest.raises(StateError, match="kaboom"):
+            run.get(blocking=True)
+
+
+def test_dummy_runner_failure_async_get_raises():
+    from clustafari.exceptions import StateError
+
+    with ClusterContext(DummyConfig()) as ctx:
+        run = ctx.apply_async(boom)
+        with pytest.raises(StateError):
+            run.get()
+
+
+def test_subprocess_runner_failure_raises_state_error():
+    from clustafari.exceptions import StateError
+
+    with ClusterContext(SubprocessConfig()) as ctx:
+        run = ctx.apply_async(boom)
+        with pytest.raises(StateError, match="kaboom"):
+            run.get(blocking=True)
+
+
+def test_subprocess_runner_is_async():
+    from clustafari.exceptions import TimeoutException
+
+    with ClusterContext(SubprocessConfig()) as ctx:
+        run = ctx.apply_async(slow, 0.4)
+        with pytest.raises(TimeoutException):
+            run.get(blocking=True, timeout=0.1)
+        assert run.get(blocking=True) == 1.4
+
+
+def test_return_object_dummy():
+    with ClusterContext(DummyConfig()) as ctx:
+        acc = Acc()
+        obj, x = ctx.apply(acc.add, 5, return_object=True)
+        assert obj.x == 15
+        assert x == 15
+
+
+def test_return_object_subprocess():
+    with ClusterContext(SubprocessConfig()) as ctx:
+        acc = Acc()
+        obj, x = ctx.apply(acc.add, 5, return_object=True)
+        assert obj.x == 15
+        assert x == 15

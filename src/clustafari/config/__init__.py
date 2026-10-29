@@ -70,14 +70,6 @@ class NodeConfig:
         """Set resource configurations."""
         self._resources = resources
 
-    def __hasattr__(self, name: str) -> bool:
-        """Check if attribute exists, including resources."""
-        try:
-            super().__getattribute__(name)
-        except AttributeError:
-            return name in self.resources
-        return True
-
     def __getattribute__(self, name: str) -> Any:
         """Get attribute by name, including resources."""
         try:
@@ -90,7 +82,7 @@ class NodeConfig:
 
     @staticmethod
     def load_defaults(config_file: Path) -> dict:
-        """Load default resource contigurations from a YAML file."""
+        """Load default resource configurations from a YAML file."""
         if not config_file.exists() or not config_file.is_file():
             return {}
 

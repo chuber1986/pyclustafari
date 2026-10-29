@@ -23,6 +23,7 @@ from clustafari.resources import (
     PartitionResource,
     RequiredNodesResource,
     Resource,
+    TimeResource,
 )
 
 from .config import _SlurmConfig
@@ -69,15 +70,15 @@ class SlurmConfig(_SlurmConfig):
         return list(defaults.keys())
 
     @classmethod
-    def get_configs(cls) -> dict[str, list[Resource]]:
-        """Return all available configurations."""
+    def get_configs(cls) -> dict[str, "SlurmConfig"]:
+        """Return all available named configurations."""
         if not defaults:
             _load_default_configurations()
         return defaults
 
     @classmethod
-    def get_config(cls, name: str) -> list[Resource]:
-        """Return configuration by name."""
+    def get_config(cls, name: str) -> "SlurmConfig":
+        """Return the named configuration (a ready SlurmConfig)."""
         if not defaults:
             _load_default_configurations()
         return defaults[name]
@@ -100,6 +101,7 @@ class SlurmConfig(_SlurmConfig):
         gpus: int | str | None = None,
         gpus_per_task: int | str | None = None,
         gpus_per_node: int | str | None = None,
+        time: str | None = None,
     ) -> "SlurmConfig":
         """Create SlurmConfig from resource specifications."""
         resources: list[Resource] = []
@@ -120,6 +122,7 @@ class SlurmConfig(_SlurmConfig):
             gpus,
             gpus_per_task,
             gpus_per_node,
+            time,
         ]
 
         ress = [
@@ -138,6 +141,7 @@ class SlurmConfig(_SlurmConfig):
             GPUsResource,
             GPUsPerTaskResource,
             GPUsPerNodeResource,
+            TimeResource,
         ]
 
         for res, val in zip(ress, vals, strict=False):

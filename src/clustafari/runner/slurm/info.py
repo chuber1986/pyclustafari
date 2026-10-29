@@ -2,11 +2,7 @@
 
 from pathlib import Path
 
-from pyslurm import Job
-
 from clustafari.runner import RunInformation
-
-COMMAND_TEMPLATE = r"python {} {}"
 
 
 class SlurmInformation(RunInformation):
@@ -17,44 +13,26 @@ class SlurmInformation(RunInformation):
         super().__init__()
         self.jobid: int = jobid
 
+        from pyslurm import Job
+
+        job = Job.load(self.jobid)
+        self.out_file = Path(job.standard_output)
+        self.err_file = Path(job.standard_error)
+
     def debug_info(self) -> dict:
         """Get debug information of the job."""
+        from pyslurm import Job
+
         job = Job.load(self.jobid)
         return job.to_dict()
 
-    @property
-    def output_(self) -> str | None:
-        """Get standard output of the job."""
-        job = Job.load(self.jobid)
-        out_file = Path(job.standard_output)
-
-        if out_file.exists():
-            with out_file.open("r", encoding="utf-8") as f:
-                self._output = f.read()
-
-        return self._output
-
-    @property
-    def error_(self) -> str | None:
-        """Get error output of the job."""
-        job = Job.load(self.jobid)
-        err_file = Path(job.standard_error)
-
-        if err_file.exists():
-            with err_file.open("r", encoding="utf-8") as f:
-                self._error = f.read()
-
-        return self._error
-
     def __del__(self) -> None:
         """Clean up output and error files on deletion."""
-        job = Job.load(self.jobid)
-        out_file = Path(job.standard_output)
-        err_file = Path(job.standard_error)
+        out_file = getattr(self, "out_file", None)
+        err_file = getattr(self, "err_file", None)
 
-        out_file.unlink(missing_ok=True)
-        err_file.unlink(missing_ok=True)
+        if out_file is not None:
+            out_file.unlink(missing_ok=True)
 
-
-if __name__ == "__main__":
-    SlurmInformation(123)
+        if err_file is not None:
+            err_file.unlink(missing_ok=True)

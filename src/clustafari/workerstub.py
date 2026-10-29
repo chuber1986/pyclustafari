@@ -50,7 +50,7 @@ class StateUtils:
 
 
 def execute(arguments: Any) -> None:
-    """Execute serialized  functions with provided arguments."""
+    """Execute serialized functions with provided arguments."""
     file = Path(arguments.filename).expanduser().resolve()
     result = None
     fnobj = None

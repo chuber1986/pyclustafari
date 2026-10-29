@@ -1,13 +1,13 @@
 """Clustafari exceptions."""
 
 
-class StateError(BaseException):
+class StateError(Exception):
     """Invalid state."""
 
 
-class RunnableStateError(BaseException):
+class RunnableStateError(Exception):
     """Function execution is in invalid state for requested operation."""
 
 
-class TimeoutException(BaseException):
+class TimeoutException(Exception):  # noqa: N818 -- pre-existing public API name
     """Timeout exception while waiting for computation result."""

@@ -1,10 +1,8 @@
 """Strategy for executing dumped JobLib files using slurm."""
 
 import logging
-import os
+import sys
 from typing import override
-
-from pyslurm import JobSubmitDescription
 
 from clustafari.exceptions import StateError
 from clustafari.runner import BaseRunner, RunInformation, Runnable
@@ -12,8 +10,6 @@ from clustafari.utils import get_error_file, get_output_file
 
 from .config import _SlurmConfig
 from .info import SlurmInformation
-
-COMMAND_TEMPLATE = r"python {} {}"
 
 __all__ = ["SlurmRunner"]
 
@@ -36,7 +32,10 @@ class SlurmRunner(BaseRunner):
 
         file = runobj.tempfile
         if file is None:
-            raise StateError
+            msg = "Runnable has no job file."
+            raise StateError(msg)
+
+        from pyslurm import JobSubmitDescription
 
         outfile = get_output_file(file)
         errfile = get_error_file(file)
@@ -47,10 +46,15 @@ class SlurmRunner(BaseRunner):
             standard_output=str(outfile),
             standard_error=str(errfile),
             script=str(self.config.job_file),
-            script_args=f"3 {os.environ['_']} {self.config.workerstub!s} {file!s}",
+            script_args=f"3 {sys.executable} {self.config.workerstub!s} {file!s}",
             **self.config.resources,
         )
 
-        jobid = desc.submit()
+        try:
+            jobid = desc.submit()
+        except Exception as e:  # noqa: BLE001
+            runobj.fail(str(e))
+            return RunInformation()
+
         runobj.info = SlurmInformation(jobid)
         return runobj.info

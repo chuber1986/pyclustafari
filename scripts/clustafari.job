@@ -1,30 +1,38 @@
 #!/bin/bash
 
 if [[ "$#" -ne 4 ]]; then
-    echo 'Usage: $0 <environment-type> <python-environment> <path-to-workerstub> <joblib-file>'
-    echo "  envitonment-type: 0 ... system interpreter"
-    echo "  envitonment-type: 1 ... system interpreter"
-    echo "  envitonment-type: 2 ... conda environment"
-    echo "  envitonment-type: 3 ... venv environment"
+    echo "Usage: \$0 <environment-type> <python-interpreter> <path-to-workerstub> <joblib-file>"
+    echo "  environment-type: 0 ... use the given interpreter directly"
+    echo "  environment-type: 1 ... use the system 'python' on PATH"
+    echo "  environment-type: 2 ... activate a conda environment from the interpreter path"
+    echo "  environment-type: 3 ... activate a venv from the interpreter path"
     exit 1
 fi
 
-envtype=$1
+envtype="$1"
 interpreter="$2"
 workerstub="$3"
 joblibfile="$4"
 
+# conda and venv both ship a bin/activate next to the interpreter,
+# so the environment is activated from the interpreter's location.
+activate_env() {
+    local activate_file
+    activate_file="$(dirname "$interpreter")/activate"
+    if [[ -f "$activate_file" ]]; then
+        # shellcheck disable=SC1090
+        source "$activate_file"
+    fi
+}
+
 if [[ $envtype -eq 0 ]]; then
-    $interpreter $workerstub $joblibfile
+    "$interpreter" "$workerstub" "$joblibfile"
 elif [[ $envtype -eq 1 ]]; then
-    python $workerstub $joblibfile
-elif [[ $envtype -eq 2 ]]; then
-    conda activate $condaname
-    $interpreter $workerstub $joblibfile
-elif [[ $envtype -eq 3 ]]; then
-    source $(dirname $interpreter)/activate
-    $interpreter $workerstub $joblibfile
+    python "$workerstub" "$joblibfile"
+elif [[ $envtype -eq 2 ]] || [[ $envtype -eq 3 ]]; then
+    activate_env
+    "$interpreter" "$workerstub" "$joblibfile"
 else
     echo "Invalid environment type: $envtype"
-    exit -1
+    exit 1
 fi

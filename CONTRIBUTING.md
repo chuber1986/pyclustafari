@@ -2,33 +2,33 @@
 
 Contributions are welcome, and they are greatly appreciated! Every little bit helps, and credit will always be given.
 
-You can contribute in many ways:
+You can contribute in many ways.
 
-### Types of Contributions
+## Types of Contributions
 
-#### Report bugs
+### Report bugs
 
 Report bugs at https://github.com/chuber1986/pyclustafari/issues.
 
-If you are reporting a bug, please include:
+If you're reporting a bug, please include:
 
 - Your operating system name and version.
 - Any details about your local setup that might be helpful in troubleshooting.
 - Detailed steps to reproduce the bug.
 
-#### Fix Bugs
+### Fix Bugs
 
-Look through the GitLab issues for bugs. Anything tagged with "bug" and "help wanted" is open to whoever wants to implement it.
+Look through the issues for bugs. Anything tagged with "bug" and "help wanted" is open to whoever wants to implement it.
 
-#### Implement Features
+### Implement Features
 
-Look through the GitLab issues for features. Anything tagged with "enhancement" and "help wanted" is open to whoever wants to implement it.
+Look through the issues for features. Anything tagged with "enhancement" and "help wanted" is open to whoever wants to implement it.
 
-#### Write Documentation
+### Write Documentation
 
-PyClustafari could always use more documentation, whether as part of the official PyClustafari docs, in docstrings, or even on the web in blog posts, articles, and such.
+PyClustafari could always use more documentation, whether as part of the official PyClustafari docs, or docstrings as appropriate.
 
-#### Submit Feedback
+### Submit Feedback
 
 The best way to send feedback is to file an issue at https://github.com/chuber1986/pyclustafari/issues.
 
@@ -42,30 +42,35 @@ If you are proposing a feature:
 
 Ready to contribute? Here's how to set up clustafari for local development.
 
-1. Fork the `pyclustafari` repo on GitLab.
+1. Fork the `pyclustafari` repo on GitHub.
 
-2. Clone your fork locally (if possible use the SSH link, starting with "git://" instead of hte HTTPS link starting with "https://"):
+2. Clone your fork locally:
 
    ```bash
-   $ git clone https://github.com/chuber1986/pyclustafari
+   $ git clone https://github.com/<you>/pyclustafari.git
    $ cd pyclustafari
    ```
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:
+3. Create a virtual environment and install the project:
 
    ```bash
-   $ conda create -n clustafari python=3.11
-   $ conda env update -n clustafari --file environment.yaml
+   $ uv sync
    ```
 
-   or use:
+   If `pyslurm` can't be installed (it must be built against the cluster's
+   Slurm libraries), create the environment without it:
 
    ```bash
-   $ make environment
+   $ uv env
+   $ uv pip install pip
+   # install pyslurm matching your cluster's Slurm version, then:
+   $ uv sync
    ```
 
-4. Install pre-commit hook:
-   Once after clone the replository run:
+   The Slurm runner requires pyslurm; `DummyConfig` and `SubprocessConfig`
+   work without it.
+
+4. Install the pre-commit hooks (once after cloning):
 
    ```bash
    $ pre-commit install
@@ -77,19 +82,16 @@ Ready to contribute? Here's how to set up clustafari for local development.
    $ git checkout -b name-of-your-bugfix-or-feature
    ```
 
-   Now you can make your changes locally.
+   Now you can make your changes.
 
-6. When you're done making changes, check that your changes pass the tests, including testing other Python versions with tox:
+6. When you're done making your changes, make sure the linters and tests pass:
 
    ```bash
-   $ python setup.py pytest  # test using the current environment
-   $ pytest                  # alternative command
-   $ tox                     # test on multiple environments
+   $ pre-commit run -a
+   $ pytest
    ```
 
-   To get flake8 and tox, just pip install them into your virtualenv.
-
-7. Commit your changes and push your branch to GitLab:
+7. Commit your changes and push the branch to GitHub:
 
    ```bash
    $ git add .
@@ -97,30 +99,32 @@ Ready to contribute? Here's how to set up clustafari for local development.
    $ git push origin name-of-your-bugfix-or-feature
    ```
 
-8. Submit a pull request through the GitLab website.
+   Use [ConventionalCommits](https://www.conventionalcommits.org) syntax for
+   commit messages.
+
+8. Submit a pull request.
 
 ## Merge Request Guidelines
 
-Before you submit a merge request, check that it meets these guidelines:
+Before you submit a pull request, check that it meets these guidelines:
 
-1. The merge request should include tests.
-2. If the merge request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in README.md.
-3. The merge request should work for Python 3.9, 3.10, and for PyPy. Check https://github.com/chuber1986/pyclustafari/merge_requests and make sure that the tests pass for all supported Python versions.
+1. The pull request should include tests.
+2. If the pull request adds functionality, the docs should be updated. Put the new functionality into a function with a docstring, and add the feature to the list in README.md.
+3. The pull request should work on the supported Python versions (>= 3.12) and pass `pre-commit run -a`.
 
 ## Tips
 
 To run a subset of tests:
 
 ```bash
-$ pytest tests
+$ pytest tests/test_clustafari.py::test_apply
 ```
 
 ## Deploying
 
-A reminder for the maintainers on how to deploy. Make sure all your changes are committed (including an entry in HISTORY.rst). Then run:
+A reminder for the maintainers on how to deploy. Make sure all your changes are committed (including an entry in `CHANGELOG.md` and the version in `pyproject.toml`). Then run:
 
 ```bash
-$ bump2version patch # possible: major / minor / patch
 $ git push
 $ git push --tags
 ```

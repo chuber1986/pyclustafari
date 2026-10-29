@@ -1,11 +1,11 @@
-"""Datastructures for SLURM recourse configurations."""
+"""Datastructures for SLURM resource configurations."""
 
 import logging
 import re
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any
+from typing import Any, ClassVar
 
 __all__ = [
     "CPUPerGPUResource",
@@ -25,6 +25,7 @@ __all__ = [
     "RequiredNodesResource",
     "Resource",
     "Resources",
+    "TimeResource",
     "Unit",
 ]
 
@@ -137,8 +138,8 @@ def check_str_or_dict(val: ResourceValue):
         return
 
     if not isinstance(val.value, dict):
-        msg = f"Resource nust be a string or dictionary, got '{type(val.value)}'."
-        raise TypeError(msg)
+        msg = f"Resource must be a string or dictionary, got '{type(val.value)}'."
+        raise ValueError(msg)  # noqa: TRY004 -- module raises ValueError for all invalid inputs
 
 
 def check_str_or_list_str(val: ResourceValue):
@@ -154,12 +155,12 @@ def check_str_or_list_str(val: ResourceValue):
 
     if not isinstance(val.value, Iterable):
         msg = f"Resource must be of type str or list of strings, got '{type(val.value)}'."
-        raise TypeError(msg)
+        raise ValueError(msg)  # noqa: TRY004 -- module raises ValueError for all invalid inputs
 
     for v in val.value:
         if not isinstance(v, str):
             msg = f"Resource must be of type str or list of strings, got list value of type '{type(v)}'."
-            raise TypeError(msg)
+            raise ValueError(msg)  # noqa: TRY004 -- module raises ValueError for all invalid inputs
 
         if _isnumeric(v):
             msg = f"Resource element values must not be numeric, got '{type(v)}'."
@@ -173,11 +174,11 @@ class Resource:
     value: ResourceValue | Any
     name: str = field(init=False)
 
-    type_check: Callable[["Resource"], None] = lambda _: None
+    type_check: ClassVar[Callable[["Resource"], None]] = lambda _: None
 
     def check_value(self) -> None:
         """Check if value is valid. To be implemented by subclasses."""
-        return self.type_check(self)
+        self.__class__.type_check(self)
 
     def __post_init__(self) -> None:
         self.value = ResourceValue.from_value(self.value)
@@ -294,7 +295,7 @@ class GPUsPerNodeResource(Resource):
 
 @string_resource
 class RequiredNodesResource(Resource):
-    """Reqired compute nodes."""
+    """Required compute nodes."""
 
     name: str = "required_nodes"
 
@@ -304,6 +305,13 @@ class ExcludedNodesResource(Resource):
     """Excluded compute nodes."""
 
     name: str = "excluded_nodes"
+
+
+@string_resource
+class TimeResource(Resource):
+    """Maximum job walltime, e.g. '00:30:00'."""
+
+    name: str = "time_limit"
 
 
 class PartitionResource(Resource):
@@ -333,5 +341,5 @@ class Resources:
     resources: Iterable[Resource]
 
     def to_dict(self) -> dict[str, str]:
-        """Return dictionary reperesentation of resources."""
+        """Return dictionary representation of resources."""
         return dict([res.to_string_tuple() for res in self.resources])

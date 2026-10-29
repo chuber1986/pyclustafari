@@ -67,16 +67,9 @@ data = { scripts = "scripts" }
 
 
 
-[tool.tox]
-requires = "tox-conda"
-
-
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = ["ANN202", "ANN401", "COM812", "D203", "D212", "D213", "D105", "EXE002", "S311", "S101", "PLC0415"]
-
-[tool.ruff.lint.per-file-ignores]
-"src/odetect/utils/*" = ["G004"]
 
 [tool.ruff]
 exclude = [
@@ -84,17 +77,9 @@ exclude = [
 ]
 line-length = 120
 
-[tool.pyrefly]
-project-includes = ["**/*"]
-project-excludes = ["**/*venv/**/*", "**/tests/**/*"]
-
-[tool.pyrefly.errors]
-bad-override = false
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = [
     "tests",
-    "integration",
 ]

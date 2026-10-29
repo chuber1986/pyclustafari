@@ -1,15 +1,12 @@
 """Top-level package for PyClustafari."""
 
 from joblib import wrap_non_picklable_objects
-from pyprojroot import here
 
 from clustafari.annotations import delayed
 from clustafari.manager import ClusterContext
 from clustafari.runner.dummy import DummyConfig, DummyRunner
 from clustafari.runner.slurm import SlurmConfig, SlurmRunner
 from clustafari.runner.subprocess import SubprocessConfig, SubprocessRunner
-
-here()
 
 __exports__ = {
     item.__name__: item

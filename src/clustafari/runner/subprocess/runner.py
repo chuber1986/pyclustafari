@@ -3,6 +3,8 @@
 import logging
 import os
 import subprocess
+import sys
+from pathlib import Path
 from typing import override
 
 from clustafari.runner import BaseRunner, RunInformation, Runnable
@@ -10,8 +12,6 @@ from clustafari.runner import BaseRunner, RunInformation, Runnable
 from .config import _SubprocessConfig
 
 logger = logging.getLogger(__name__)
-
-COMMAND_TEMPLATE = os.environ["_"] + r" {} {}"
 
 __all__ = ["SubprocessRunner"]
 
@@ -28,10 +28,15 @@ class SubprocessRunner(BaseRunner):
     def _run(self, runobj: Runnable) -> RunInformation:
         logger.info("Execute Runner '%s'", self.__class__.__name__)
         runobj.execute()
-        info = RunInformation()
 
         file = runobj.tempfile
-        command = COMMAND_TEMPLATE.format(str(self.config.workerstub), str(file)).split()
-        info.output = str(subprocess.run(command, capture_output=True, check=True))  # noqa: S603
+        command = [sys.executable, str(self.config.workerstub), str(file)]
+        env = os.environ.copy()
+        env["PYTHONPATH"] = Path.cwd().as_posix() + os.pathsep + env.get("PYTHONPATH", "")
 
-        return info
+        try:
+            subprocess.Popen(command, env=env)  # noqa: S603
+        except OSError as e:
+            runobj.fail(str(e))
+
+        return RunInformation()

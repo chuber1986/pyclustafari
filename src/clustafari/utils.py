@@ -44,7 +44,7 @@ class State(StrEnum):
 
     @classmethod
     def _missing_(cls, value: object) -> "State":
-        """Retrun default state if missing."""
+        """Return default state if missing."""
         logger.warning("Unknown state '%s', defaulting to IDLE.", value)
         return cls.IDLE
 

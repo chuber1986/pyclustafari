@@ -19,16 +19,13 @@ class ClusterContext:
     def __init__(self, config: NodeConfig) -> None:
         """Initialize ClusterContext with configuration."""
         self._config = config
-        self._runs: list[Runnable] = []
 
     def __enter__(self) -> "ClusterContext":
         """Enter context manager."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # noqa: ANN001
-        """Exit context manager."""
-        for runnable in self._runs:
-            del runnable
+        """Exit context manager. Async runs keep living on."""
 
     def apply(self, fn: Callable, /, *args: Any, return_object: bool = False, **kwargs: Any) -> Any:
         """Create delayed execution of a function and wait for the result."""
@@ -36,7 +33,7 @@ class ClusterContext:
         return self._config.runner.apply(fn, *args, return_object=return_object, **kwargs)
 
     def apply_async(self, fn: Callable, /, *args: Any, return_object: bool = False, **kwargs: Any) -> Runnable:
-        """Create delayed asyncronouse execution of a function and do NOT wait for the result."""
+        """Create delayed asynchronous execution of a function and do NOT wait for the result."""
         logger.debug("Manage call 'apply_async'")
         return self._config.runner.apply_async(fn, *args, return_object=return_object, **kwargs)
 
