@@ -21,26 +21,21 @@ class DummyRunner(BaseRunner):
         runobj.execute()
 
         info = RunInformation()
-        fn = runobj.function
-        args = runobj.args
-        kwargs = runobj.kwargs
-
         out = StringIO()
         err = StringIO()
         runobj.info = info
         with redirect_io(err=err, out=out):
             try:
-                info.result = fn(*args, **kwargs)
+                result = runobj.function(*runobj.args, **runobj.kwargs)
             except BaseException as e:  # noqa: BLE001
-                info.error = str(e)
                 runobj.fail(str(e))
                 return info
 
-        info.output = str(out)
-        info.error += str(err)
+        info.output = out.getvalue()
+        info.error += err.getvalue()
 
         if runobj.return_object:
-            runobj.finish(getattr(fn, "__self__", None), info.result)
+            runobj.finish(getattr(runobj.function, "__self__", None), result)
         else:
-            runobj.finish(None, info.result)
+            runobj.finish(None, result)
         return info

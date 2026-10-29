@@ -30,6 +30,14 @@
   the other runners.
 - `DummyRunner` ignored `return_object=True` and discarded captured output; both
   are now handled.
+- `DummyRunner` captured `str(StringIO(...))` — the buffer's repr, not its
+  contents — into `info.output` / `info.error`; it now uses `getvalue()`.
+- `DummyRunner`'s failure path doubled the error text (the handler assigned
+  `info.error = str(e)` and `Runnable.fail()` appended the same message to the
+  same info object); the redundant assignment is removed.
+- `DummyConfig` / `SubprocessConfig` string representations dropped the first
+  character of the class name (e.g. `ubprocessConfig({})`); `__str__` /
+  `__repr__` are now implemented once on `NodeConfig`.
 - `SubprocessRunner` ran the worker synchronously (no `apply_async`/timeout
   benefit) and used `os.environ["_"]` as the interpreter; it now uses
   `sys.executable` and a non-blocking `Popen`, with the caller's CWD added to the
@@ -66,6 +74,16 @@
 
 ### Changed
 
+- Simplified the runner stack without behavior changes:
+  `RunInformation` now uses plain attributes instead of pass-through
+  properties and its never-read `result` field is gone (results live on the
+  `Runnable`); `NodeConfig` drops the no-op `@dataclass` decorator and its
+  `__getattribute__` override in favor of a standard `__getattr__` resource
+  fallback; `BaseRunner.map_async` replaces its sentinel count bookkeeping with
+  a direct length check; `SlurmConfig.create_config` uses a single
+  (resource class, value) spec list instead of two parallel lists; and the
+  top-level package replaces its `__exports__` / `_set_attributes`
+  `globals()` machinery with plain imports and `__all__`.
 - `ClusterContext.__exit__` is now a no-op (async runs intentionally outlive the
   context) instead of an opaque `del` loop.
 - CONTRIBUTING.md, README.md and the job script were corrected to match the

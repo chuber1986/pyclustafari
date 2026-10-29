@@ -1,7 +1,6 @@
 """Run configurations package."""
 
 import importlib
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -39,7 +38,6 @@ def _parse_resources(resources: list[dict[str, str]]) -> list[Resource]:
     return [_parse_resource(res) for res in resources]
 
 
-@dataclass
 class NodeConfig:
     """Node configuration class."""
 
@@ -54,31 +52,26 @@ class NodeConfig:
         self.job_file = jobfile
         self.workerstub = workerstub
         self.runner = runner
+        self.resources: dict[str, Resource] = resources or {}
 
-        if resources is None:
-            resources = {}
+    def __getattr__(self, name: str) -> Any:
+        """Return a named resource if no regular attribute matches."""
+        if name.startswith("_"):
+            msg = name
+            raise AttributeError(msg)
 
-        self._resources = resources
+        resources = self.__dict__.get("resources", {})
+        if name in resources:
+            return resources[name]
 
-    @property
-    def resources(self) -> dict[str, Resource]:
-        """Return resource configurations."""
-        return self._resources
+        msg = f"'{type(self).__name__}' object has no attribute {name!r}"
+        raise AttributeError(msg)
 
-    @resources.setter
-    def resources(self, resources: dict[str, Resource]) -> None:
-        """Set resource configurations."""
-        self._resources = resources
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}({self.resources})"
 
-    def __getattribute__(self, name: str) -> Any:
-        """Get attribute by name, including resources."""
-        try:
-            return super().__getattribute__(name)
-        except AttributeError:
-            resources = super().__getattribute__("_resources")
-            if name in resources:
-                return resources[name]
-            raise
+    def __repr__(self) -> str:
+        return str(self)
 
     @staticmethod
     def load_defaults(config_file: Path) -> dict:

@@ -2,7 +2,7 @@
 
 import time
 from pathlib import Path
-from typing import ClassVar, override
+from typing import Any, ClassVar, override
 
 from clustafari.runner import RunInformation
 
@@ -47,8 +47,8 @@ class SlurmInformation(RunInformation):
         from pyslurm import Job
 
         job = Job.load(self.jobid)
-        self.out_file = Path(job.standard_output)
-        self.err_file = Path(job.standard_error)
+        self.out_file: Path = Path(job.standard_output)
+        self.err_file: Path = Path(job.standard_error)
 
     @override
     def terminated(self) -> bool:
@@ -86,7 +86,7 @@ class SlurmInformation(RunInformation):
 
         return self._terminated
 
-    def debug_info(self) -> dict:
+    def debug_info(self) -> dict[str, Any]:
         """Get debug information of the job."""
         from pyslurm import Job
 

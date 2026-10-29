@@ -104,48 +104,24 @@ class SlurmConfig(_SlurmConfig):
         time: str | None = None,
     ) -> "SlurmConfig":
         """Create SlurmConfig from resource specifications."""
-        resources: list[Resource] = []
-
-        vals = [
-            mem_per_node,
-            mem_per_cpu,
-            mem_per_gpu,
-            cpu_per_task,
-            cpu_per_gpu,
-            required_nodes,
-            excluded_nodes,
-            partition,
-            generic_resource,
-            n_tasks,
-            n_tasks_per_node,
-            n_tasks_per_gpu,
-            gpus,
-            gpus_per_task,
-            gpus_per_node,
-            time,
+        specs: list[tuple[type[Resource], int | str | None]] = [
+            (MemoryPerNodeResource, mem_per_node),
+            (MemoryPerCPUResource, mem_per_cpu),
+            (MemoryPerGPUResource, mem_per_gpu),
+            (CPUPerTaskResource, cpu_per_task),
+            (CPUPerGPUResource, cpu_per_gpu),
+            (RequiredNodesResource, required_nodes),
+            (ExcludedNodesResource, excluded_nodes),
+            (PartitionResource, partition),
+            (GenericResource, generic_resource),
+            (NTasksResource, n_tasks),
+            (NTasksPerNodeResource, n_tasks_per_node),
+            (NTasksPerGPUResource, n_tasks_per_gpu),
+            (GPUsResource, gpus),
+            (GPUsPerTaskResource, gpus_per_task),
+            (GPUsPerNodeResource, gpus_per_node),
+            (TimeResource, time),
         ]
 
-        ress = [
-            MemoryPerNodeResource,
-            MemoryPerCPUResource,
-            MemoryPerGPUResource,
-            CPUPerTaskResource,
-            CPUPerGPUResource,
-            RequiredNodesResource,
-            ExcludedNodesResource,
-            PartitionResource,
-            GenericResource,
-            NTasksResource,
-            NTasksPerNodeResource,
-            NTasksPerGPUResource,
-            GPUsResource,
-            GPUsPerTaskResource,
-            GPUsPerNodeResource,
-            TimeResource,
-        ]
-
-        for res, val in zip(ress, vals, strict=False):
-            if val is not None:
-                resources.append(res(val))
-
+        resources = [res(val) for res, val in specs if val is not None]
         return SlurmConfig(*resources)

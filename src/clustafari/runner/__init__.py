@@ -4,7 +4,6 @@ import abc
 import logging
 from collections.abc import Callable, Iterable, Mapping
 from functools import partial
-from itertools import repeat
 from typing import Any
 
 from .info import RunInformation
@@ -22,7 +21,7 @@ class BaseRunner(abc.ABC):
         return self.apply_async(fn, *args, return_object=return_object, **kwargs).get(blocking=True)
 
     def apply_async(self, fn: Callable, /, *args: Any, return_object: bool = False, **kwargs: Any) -> Runnable:
-        """Create delayed asyncronouse execution of a function and do NOT wait for the result."""
+        """Create delayed asynchronous execution of a function and do NOT wait for the result."""
         logger.debug("Call 'apply_async'")
         runobj = Runnable(
             fn,
@@ -59,37 +58,21 @@ class BaseRunner(abc.ABC):
         """Apply function to a list of arguments and do NOT wait for the results."""
         logger.debug("Call 'map_async'")
 
-        nkwargs = 0
-        nargs = 0
+        iargs = list(args) if args is not None else []
+        ikwargs = list(kwargs) if kwargs is not None else []
 
-        iargs: Iterable | list = []
-        ikwargs: Iterable | list = []
-
-        if args is not None:
-            iargs = list(args)
-            nargs = len(iargs)
-        elif kwargs is not None:
-            iargs = repeat([])
-            nargs = -1
-
-        if kwargs is not None:
-            ikwargs = list(kwargs)
-            nkwargs = len(ikwargs)
-            if nargs == -1:
-                nargs = nkwargs
-        elif args is not None:
-            ikwargs = repeat({})
-            nkwargs = nargs
-
-        if nargs != nkwargs:
+        if args is not None and kwargs is not None and len(iargs) != len(ikwargs):
             msg = "If provided, the list of keyword arguments must have the same length as the list of argument."
             raise ValueError(msg)
 
+        n = max(len(iargs), len(ikwargs))
         partial_fn = partial(fn, **fixed_kwargs)
-        return [
-            self.apply_async(partial_fn, *a, return_object=return_object, **kwa)
-            for a, kwa in zip(iargs, ikwargs, strict=False)
-        ]
+        runners: list[Runnable] = []
+        for i in range(n):
+            a = iargs[i] if iargs else ()
+            kwa = ikwargs[i] if ikwargs else {}
+            runners.append(self.apply_async(partial_fn, *a, return_object=return_object, **kwa))
+        return runners
 
     @abc.abstractmethod
     def _run(self, runobj: Runnable) -> RunInformation: ...

@@ -8,28 +8,17 @@ from clustafari.runner.dummy import DummyConfig, DummyRunner
 from clustafari.runner.slurm import SlurmConfig, SlurmRunner
 from clustafari.runner.subprocess import SubprocessConfig, SubprocessRunner
 
-__exports__ = {
-    item.__name__: item
-    for item in [
-        DummyConfig,
-        SlurmConfig,
-        SubprocessConfig,
-        ClusterContext,
-        DummyRunner,
-        SlurmRunner,
-        SubprocessRunner,
-        wrap_non_picklable_objects,
-        delayed,
-    ]
-}
-
-
-def _set_attributes(attributes: dict):
-    for key, value in attributes.items():
-        globals()[key] = value
-
-
-_set_attributes(__exports__)
+__all__ = [
+    "ClusterContext",
+    "DummyConfig",
+    "DummyRunner",
+    "SlurmConfig",
+    "SlurmRunner",
+    "SubprocessConfig",
+    "SubprocessRunner",
+    "delayed",
+    "wrap_non_picklable_objects",
+]
 
 __author__ = """Christian Huber"""
 __email__ = "hiddenaddress@gmail.com"
