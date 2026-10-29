@@ -127,9 +127,24 @@ def test_slurm_runner(fn, args, kwargs):
 
 def test_slurm_runner_config():
     with ClusterContext(
-        SlurmConfig(MemoryPerNodeResource(value="10"), CPUPerTaskResource(value=1))
+        SlurmConfig(MemoryPerNodeResource(value="1G"), CPUPerTaskResource(value=1))
     ) as ctx:
         assert ctx.apply(fn0) == 1
+
+
+@pytest.mark.skipif(condition=os.system("srun -V") != 0, reason="slurm not available")
+def test_slurm_runner_killed_worker_reports_failure():
+    from clustafari.exceptions import StateError
+
+    # A 10 MB memory limit cannot run the Python interpreter, so Slurm OOM-kills
+    # the worker before it can write its state file. `get` must then report the
+    # failure instead of waiting for a state file that will never appear.
+    with ClusterContext(
+        SlurmConfig(MemoryPerNodeResource(value="10"), CPUPerTaskResource(value=1))
+    ) as ctx:
+        run = ctx.apply_async(fn0)
+        with pytest.raises(StateError, match="terminated"):
+            run.get(blocking=True, timeout=60)
 
 
 def boom():

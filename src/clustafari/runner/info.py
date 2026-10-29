@@ -13,6 +13,15 @@ class RunInformation:
         self._error: str = ""
         self._log: str = ""
 
+    def terminated(self) -> bool:
+        """Return True when the backing execution has ended on the cluster side.
+
+        The base information has no knowledge of an external process or job,
+        so it can never report termination; runners with an external
+        execution (e.g. Slurm) override this.
+        """
+        return False
+
     @property
     def output(self) -> str:
         """Return the output of the execution."""

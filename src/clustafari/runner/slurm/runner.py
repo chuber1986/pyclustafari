@@ -1,7 +1,9 @@
 """Strategy for executing dumped JobLib files using slurm."""
 
 import logging
+import os
 import sys
+from pathlib import Path
 from typing import override
 
 from clustafari.exceptions import StateError
@@ -47,6 +49,11 @@ class SlurmRunner(BaseRunner):
             standard_error=str(errfile),
             script=str(self.config.job_file),
             script_args=f"3 {sys.executable} {self.config.workerstub!s} {file!s}",
+            # Mirror the caller's working directory so functions defined in
+            # project-local modules (e.g. tests) are importable in the worker.
+            environment={
+                "PYTHONPATH": Path.cwd().as_posix() + os.pathsep + os.environ.get("PYTHONPATH", ""),
+            },
             **self.config.resources,
         )
 

@@ -145,10 +145,26 @@ class Runnable:
         if self._state in (RunState.FINISHED, RunState.FAILED):
             return True
 
-        return self._state == RunState.READY and self._read_state_file() in [
-            State.FAILED,
-            State.FINISHED,
-        ]
+        if self._state != RunState.READY:
+            return False
+
+        if self._read_state_file() in [State.FAILED, State.FINISHED]:
+            return True
+
+        # The backing job ended on the cluster side (e.g. killed by the
+        # kernel) without the worker writing a state file. Fail the run
+        # instead of waiting for a state file that will never appear.
+        if self._info.terminated():
+            self.fail(self._termination_error_message())
+            return True
+
+        return False
+
+    def _termination_error_message(self) -> str:
+        err = self._read_file(self.errorfile).strip()
+        if err:
+            return f"Job terminated without writing a state file. Standard error:\n{err}"
+        return "Job terminated without writing a state file (the worker died before reporting its state)."
 
     def _delete_temp_files(self):
         if self.tempdir is None or not self.tempdir.exists():

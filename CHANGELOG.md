@@ -4,6 +4,17 @@
 
 ### Fixed
 
+- A Slurm job whose worker was killed before it could write its state file
+  (e.g. the kernel OOM-killed the worker before the interpreter even started)
+  made `Runnable.get()` / `apply()` wait forever. `SlurmInformation.terminated()`
+  now detects a terminal job with an abnormal exit (non-zero exit code or
+  signal, e.g. `Killed`) — a clean `COMPLETED 0:0` still means the state file
+  is on its way, and the run keeps waiting for it — and `Runnable.is_finished()`
+  fails such runs with the job's standard error so `get()` raises `StateError`
+  promptly.
+- `test_slurm_runner_config` requested `MemoryPerNodeResource(value="10")`
+  (10 MB), which cannot run a Python interpreter and was OOM-killed by Slurm;
+  it now requests 1 GB.
 - Resource value validation was dead for all decorator-based resources
   (`MemoryPer*Resource`, `CPUPer*Resource`, `NTasks*Resource`, `GPUs*Resource`,
   `RequiredNodesResource`, `ExcludedNodesResource`, `TimeResource`). `type_check`
