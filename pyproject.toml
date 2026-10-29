@@ -54,9 +54,6 @@ Changelog = "https://github.com/chuber1986/pyclustafari/blob/main/CHANGELOG.md"
 [tool.uv.sources]
 pyslurm = { path = "../pyslurm" }
 
-[project.scripts]
-clustafari = "clustafari:main"
-
 
 [build-system]
 requires = ["uv_build>=0.9.24,<0.10.0"]

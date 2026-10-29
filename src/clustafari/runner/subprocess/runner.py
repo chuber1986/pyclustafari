@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import override
 
 from clustafari.runner import BaseRunner, RunInformation, Runnable
+from clustafari.runner.state import RunState
 
 from .config import _SubprocessConfig
 
@@ -28,9 +29,10 @@ class SubprocessRunner(BaseRunner):
     def _run(self, runobj: Runnable) -> RunInformation:
         logger.info("Execute Runner '%s'", self.__class__.__name__)
         runobj.execute()
+        if runobj.state == RunState.FAILED:
+            return RunInformation()
 
-        file = runobj.tempfile
-        command = [sys.executable, str(self.config.workerstub), str(file)]
+        command = [sys.executable, str(self.config.workerstub), str(runobj.tempfile)]
         env = os.environ.copy()
         env["PYTHONPATH"] = Path.cwd().as_posix() + os.pathsep + env.get("PYTHONPATH", "")
 

@@ -7,6 +7,7 @@ import pytest
 
 from clustafari import ClusterContext, DummyConfig, SlurmConfig, SubprocessConfig
 from clustafari.resources import CPUPerTaskResource, MemoryPerNodeResource
+from clustafari.runner.state import RunState
 
 
 def fn0():
@@ -216,3 +217,46 @@ def test_return_object_subprocess():
         obj, x = ctx.apply(acc.add, 5, return_object=True)
         assert obj.x == 15
         assert x == 15
+
+
+class Unpicklable:
+    def __reduce__(self):
+        import pickle
+
+        raise pickle.PicklingError("cannot pickle Unpicklable")
+
+
+def unpicklable_fn(arg):
+    return arg
+
+
+def test_unpicklable_argument_fails_run_dummy():
+    from clustafari.exceptions import StateError
+
+    with ClusterContext(DummyConfig()) as ctx:
+        run = ctx.apply_async(unpicklable_fn, Unpicklable())
+        assert run.state == RunState.FAILED
+        with pytest.raises(StateError, match="pickle"):
+            run.get(blocking=True)
+
+
+def test_unpicklable_argument_fails_run_subprocess():
+    from clustafari.exceptions import StateError
+
+    with ClusterContext(SubprocessConfig()) as ctx:
+        run = ctx.apply_async(unpicklable_fn, Unpicklable())
+        assert run.state == RunState.FAILED
+        with pytest.raises(StateError, match="pickle"):
+            run.get(blocking=True)
+
+
+@pytest.mark.skipif(condition=os.system("srun -V") != 0, reason="slurm not available")
+def test_unpicklable_argument_fails_run_slurm():
+    from clustafari.exceptions import StateError
+
+    # A prepare failure must not submit a job to the cluster.
+    with ClusterContext(SlurmConfig()) as ctx:
+        run = ctx.apply_async(unpicklable_fn, Unpicklable())
+        assert run.state == RunState.FAILED
+        with pytest.raises(StateError, match="pickle"):
+            run.get(blocking=True)

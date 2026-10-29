@@ -5,6 +5,7 @@ from io import StringIO
 from typing import override
 
 from clustafari.runner import BaseRunner, RunInformation, Runnable
+from clustafari.runner.state import RunState
 from clustafari.utils import redirect_io
 
 __all__ = ["DummyRunner"]
@@ -19,6 +20,8 @@ class DummyRunner(BaseRunner):
     def _run(self, runobj: Runnable) -> RunInformation:
         logger.info("Execute Runner '%s'", self.__class__.__name__)
         runobj.execute()
+        if runobj.state == RunState.FAILED:
+            return RunInformation()
 
         info = RunInformation()
         out = StringIO()

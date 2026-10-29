@@ -6,8 +6,8 @@ import sys
 from pathlib import Path
 from typing import override
 
-from clustafari.exceptions import StateError
 from clustafari.runner import BaseRunner, RunInformation, Runnable
+from clustafari.runner.state import RunState
 from clustafari.utils import get_error_file, get_output_file
 
 from .config import _SlurmConfig
@@ -31,11 +31,11 @@ class SlurmRunner(BaseRunner):
     def _run(self, runobj: Runnable) -> RunInformation:
         logger.info("Execute Runner '%s'", self.__class__.__name__)
         runobj.execute()
+        if runobj.state == RunState.FAILED:
+            return RunInformation()
 
         file = runobj.tempfile
-        if file is None:
-            msg = "Runnable has no job file."
-            raise StateError(msg)
+        assert file is not None, "execute() must have created the job file."
 
         from pyslurm import JobSubmitDescription
 

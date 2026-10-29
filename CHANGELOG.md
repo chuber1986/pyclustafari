@@ -4,6 +4,21 @@
 
 ### Fixed
 
+- A failed run preparation (`Runnable.execute()` — hashing, temp-dir creation,
+  or joblib serialization) only failed the run for `RuntimeError`; an
+  unpicklable function or argument raised `PicklingError` and a temp-dir or
+  write failure raised `OSError`, both of which leaked out of
+  `apply_async` / `apply` as raw exceptions instead of producing a failed run.
+  `execute()` now catches the preparation error, records it on the run, and
+  fails it; `get()` then raises `StateError` with the underlying error text,
+  consistent with a function-execution failure.
+- The runners no longer proceed after a failed preparation: `DummyRunner` no
+  longer runs the function and then dies in `finish()` with a spurious
+  `RunnableStateError`; `SubprocessRunner` no longer spawns a worker for a
+  job file that was never written; and `SlurmRunner`'s unreachable
+  `if file is None` check (dead code once a failed prepare leaves the job file
+  unset) is replaced by the same failed-run early return plus an invariant
+  assert.
 - A Slurm job whose worker was killed before it could write its state file
   (e.g. the kernel OOM-killed the worker before the interpreter even started)
   made `Runnable.get()` / `apply()` wait forever. `SlurmInformation.terminated()`
@@ -69,6 +84,12 @@
   `SlurmInformation` `__main__` block, and the unused `COMMAND_TEMPLATE` in the
   dummy runner.
 - Tracked `.env` / `.autoenv` (both are gitignored and machine-local).
+- The `clustafari` console script entry point, which pointed at a
+  `clustafari.main` that no longer exists since the 2024 packaging refactor
+  (the old `main()` was a hard-coded development demo never ported into the
+  package); invoking `clustafari` crashed with `ImportError`. The package is
+  used through the `ClusterContext` API only, and no CLI was ever
+  documented, so the dead entry point is removed.
 - Dead `pyproject.toml` sections (`[tool.tox]`, `[tool.pyrefly]`, a
   `src/odetect` ruff ignore, and the nonexistent `integration` test path).
 

@@ -134,7 +134,12 @@ class Runnable:
             )
             joblib.dump(function_data, self.tempfile)
             self._state = RunState.READY
-        except RuntimeError as err:
+        except Exception as err:  # noqa: BLE001
+            # A preparation failure (hashing, directory creation, or
+            # serialization) is not a job failure. Mark the run as failed so
+            # callers report it through `get()` instead of leaking a raw
+            # exception (e.g. `PicklingError`) out of `apply_async`.
+            logger.debug("Prepare Runnable '%s' failed", repr(self), exc_info=True)
             self.fail(str(err))
 
     def _get_hash(self) -> str | None:
