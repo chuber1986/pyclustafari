@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -1944,8 +1944,16 @@ wheels = [
 
 [[package]]
 name = "pyslurm"
-version = "25.11.0"
 source = { directory = "../pyslurm" }
+
+[package.metadata]
+requires-dist = [
+    { name = "cython-lint", marker = "extra == 'dev'" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-sugar", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "pytest"
