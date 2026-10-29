@@ -38,7 +38,7 @@
 
 ### Added
 
-- `Runnable.state` property and `Runnable.fail()` / `Runnable._finish()` helpers.
+- `Runnable.state` property and `Runnable.fail()` / `Runnable.finish()` helpers.
 - `SlurmConfig` `time=` / `TimeResource` walltime support.
 - Tests covering dummy/subprocess failure, async/timeout, and `return_object`.
 
