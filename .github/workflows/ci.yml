@@ -50,9 +50,12 @@ jobs:
         run: bash scripts/extract_slurm_env.sh .slurm-26.05 "${SLURM_IMAGE}"
 
       - name: Install dependencies
+        # pyslurm's build resolves SLURM_INCLUDE_DIR/SLURM_LIB_DIR relative to
+        # its own checkout directory (uv builds git deps out of the repo
+        # tree), so absolute paths are required here.
         env:
-          SLURM_INCLUDE_DIR: .slurm-26.05/usr/include
-          SLURM_LIB_DIR: .slurm-26.05/usr/lib64
+          SLURM_INCLUDE_DIR: ${{ github.workspace }}/.slurm-26.05/usr/include
+          SLURM_LIB_DIR: ${{ github.workspace }}/.slurm-26.05/usr/lib64
           PYSLURM_BUILD_JOBS: 4
         run: uv sync --locked
 
@@ -93,8 +96,10 @@ jobs:
 
       - name: Build site
         env:
-          SLURM_INCLUDE_DIR: .slurm-26.05/usr/include
-          SLURM_LIB_DIR: .slurm-26.05/usr/lib64
+          # Absolute paths: pyslurm's build resolves these relative to its
+          # own checkout, not the repo root (see the checks job).
+          SLURM_INCLUDE_DIR: ${{ github.workspace }}/.slurm-26.05/usr/include
+          SLURM_LIB_DIR: ${{ github.workspace }}/.slurm-26.05/usr/lib64
           PYSLURM_BUILD_JOBS: 4
           # The docs build imports clustafari (mkdocstrings); without a Slurm
           # controller pyslurm must not try to connect to one.
