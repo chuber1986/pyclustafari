@@ -1,0 +1,123 @@
+# GitHub CI, analogous to useful-utilities' .gitlab-ci.yml:
+#
+#   checks   = prek gate (`uv run prek run --all-files`; pytest is a local
+#              prek hook). pyslurm is a git-pinned dependency (see
+#              [tool.uv.sources] in pyproject.toml); because it must be built
+#              against Slurm 26.05 headers/libraries that the GitHub runners
+#              do not have, the job first extracts a client Slurm environment
+#              from the giovtorres/slurm-docker image (the image PySlurm's
+#              own CI builds against) and points the build at it.
+#
+#   docs     = mkdocs build (Read the Docs theme, SAL branding) published to
+#              GitHub Pages from the default branch.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SLURM_IMAGE: giovtorres/slurm-docker:26.05.3-rl10
+
+jobs:
+  checks:
+    name: prek (lint, type check, tests)
+    runs-on: ubuntu-latest
+    container: ghcr.io/astral-sh/uv:python3.12-trixie
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: uv
+        uses: astral-sh/setup-uv@v8
+
+      - name: Extract Slurm 26.05 client environment
+        # pyslurm 26.5.x (Slurm 26.05) needs matching headers/libraries to
+        # build. Cache the extracted tree, keyed by the image tag.
+        id: slurm
+        uses: actions/cache@v4
+        with:
+          path: .slurm-26.05
+          key: slurm-env-${{ env.SLURM_IMAGE }}-1
+
+      - name: Fetch Slurm headers/libraries from image (cache miss)
+        if: steps.slurm.outputs.cache-hit != 'true'
+        run: bash scripts/extract_slurm_env.sh .slurm-26.05 "${SLURM_IMAGE}"
+
+      - name: Install dependencies
+        env:
+          SLURM_INCLUDE_DIR: .slurm-26.05/usr/include
+          SLURM_LIB_DIR: .slurm-26.05/usr/lib64
+          PYSLURM_BUILD_JOBS: 4
+        run: uv sync --locked
+
+      - name: Run prek
+        env:
+          # No Slurm controller on the runner: importing pyslurm (the pytest
+          # hook, the ty hook) must not attempt to connect to one. Slurm
+          # runner tests skip themselves when no srun is available.
+          PYSLURM_DISABLE_AUTO_INIT: "1"
+          SLURM_CONF: /dev/null
+        run: uv run prek run --all-files
+
+  docs:
+    name: mkdocs
+    runs-on: ubuntu-latest
+    container: ghcr.io/astral-sh/uv:python3.12-trixie
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: uv
+        uses: astral-sh/setup-uv@v8
+
+      - name: Extract Slurm 26.05 client environment
+        # `uv sync` builds the pyslurm dependency from its git-pinned source
+        # against the Slurm 26.05 headers/libraries (see the checks job).
+        id: slurm
+        uses: actions/cache@v4
+        with:
+          path: .slurm-26.05
+          key: slurm-env-${{ env.SLURM_IMAGE }}-1
+
+      - name: Fetch Slurm headers/libraries from image (cache miss)
+        if: steps.slurm.outputs.cache-hit != 'true'
+        run: bash scripts/extract_slurm_env.sh .slurm-26.05 "${SLURM_IMAGE}"
+
+      - name: Build site
+        env:
+          SLURM_INCLUDE_DIR: .slurm-26.05/usr/include
+          SLURM_LIB_DIR: .slurm-26.05/usr/lib64
+          PYSLURM_BUILD_JOBS: 4
+          # The docs build imports clustafari (mkdocstrings); without a Slurm
+          # controller pyslurm must not try to connect to one.
+          PYSLURM_DISABLE_AUTO_INIT: "1"
+          SLURM_CONF: /dev/null
+        run: |
+          uv sync --locked --group docs
+          uv run mkdocs build --strict --site-dir public
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    name: GitHub Pages
+    needs: docs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

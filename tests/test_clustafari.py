@@ -126,6 +126,7 @@ def test_slurm_runner(fn, args, kwargs):
         assert ctx.apply(fn, *args, **kwargs) == fn(*args, **kwargs)
 
 
+@pytest.mark.skipif(condition=os.system("srun -V") != 0, reason="slurm not available")
 def test_slurm_runner_config():
     with ClusterContext(
         SlurmConfig(MemoryPerNodeResource(value="1G"), CPUPerTaskResource(value=1))
