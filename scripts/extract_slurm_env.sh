@@ -35,30 +35,53 @@ m = json.loads(sys.stdin.read())
 print(" ".join(l["digest"] for l in m["layers"]))
 ' <<<"$(curl -fsSL "${AUTH[@]}" -H 'Accept: application/vnd.oci.image.manifest.v2+json' "${BASE}/manifests/${MANIFEST}")")"
 
-# Files that make up a usable Slurm client environment. Only these are
-# extracted; no slurmctld/spool state is needed, just link/load.
+# Files that make up a usable Slurm client environment. No slurmctld/spool
+# state is needed, just headers to compile against and libraries/plugins to
+# link and load.
 WANT_RE='^usr/include/slurm/|^usr/lib64/(slurm/libslurmfull\.so|slurm/auth_[a-z0-9]+\.so|libslurm\.so(\.45(\.0\.0)?)?)$'
 
 mkdir -p "${SLURM_DIR}"
 TMP="$(mktemp -d)"
-trap 'rm -rf "${TMP}"' EXIT
+cleanup() {
+  # Extracted image files carry root modes; make them writable so the
+  # cleanup can remove them (a failing trap would otherwise mask the exit
+  # code of the real work).
+  chmod -R u+w "${TMP}" 2>/dev/null || true
+  rm -rf "${TMP}" 2>/dev/null || true
+}
+trap cleanup EXIT
 
-found_any=0
+# Member-filtered tar extraction (xzf with member args / --files-from) is
+# not portable across tar versions, and `grep -q` in a pipeline fails under
+# pipefail (grep exits on first match, tar dies on SIGPIPE). So: list each
+# layer, fully extract the ones that hold slurm files, and copy out just the
+# wanted paths.
 for D in ${LAYER_DIGESTS}; do
   curl -fsSL "${AUTH[@]}" "${BASE}/blobs/${D}" -o "${TMP}/layer.tar.gz"
-  # List the archive (streams it once) and keep only the members this layer
-  # actually holds, so the extraction below matches every requested member.
   tar tzf "${TMP}/layer.tar.gz" 2>/dev/null | grep -E "${WANT_RE}" > "${TMP}/members" || true
   if [ ! -s "${TMP}/members" ]; then
     continue
   fi
-  found_any=1
   echo "extracting slurm files from layer ${D:0:19}..."
-  # xzf with member filter streams the archive again, writing only matches.
-  tar xzf "${TMP}/layer.tar.gz" -C "${SLURM_DIR}" --no-same-owner --files-from="${TMP}/members" 2>/dev/null
+  rm -rf "${TMP}/x"
+  mkdir -p "${TMP}/x"
+  tar xzf "${TMP}/layer.tar.gz" -C "${TMP}/x" --no-same-owner
+  mkdir -p "${SLURM_DIR}/usr/include" "${SLURM_DIR}/usr/lib64"
+  if [ -d "${TMP}/x/usr/include/slurm" ]; then
+    cp -r "${TMP}/x/usr/include/slurm" "${SLURM_DIR}/usr/include/"
+  fi
+  if [ -d "${TMP}/x/usr/lib64/slurm" ]; then
+    cp -r "${TMP}/x/usr/lib64/slurm" "${SLURM_DIR}/usr/lib64/"
+  fi
+  if [ -f "${TMP}/x/usr/lib64/libslurm.so" ]; then
+    cp "${TMP}/x/usr/lib64/libslurm.so" \
+       "${TMP}/x/usr/lib64/libslurm.so.45" \
+       "${TMP}/x/usr/lib64/libslurm.so.45.0.0" \
+       "${SLURM_DIR}/usr/lib64/"
+  fi
 done
 
-if [ "${found_any}" -eq 0 ] || [ ! -f "${SLURM_DIR}/usr/include/slurm/slurm.h" ] || [ ! -f "${SLURM_DIR}/usr/lib64/slurm/libslurmfull.so" ]; then
+if [ ! -f "${SLURM_DIR}/usr/include/slurm/slurm.h" ] || [ ! -f "${SLURM_DIR}/usr/lib64/slurm/libslurmfull.so" ]; then
   echo "error: Slurm headers/library not found in image ${IMAGE}" >&2
   exit 1
 fi
