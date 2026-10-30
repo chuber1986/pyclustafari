@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Fixed
+
+- `Runnable._delete_temp_files()` unlinked the run's temp files one by one and
+  then `rmdir()` the directory; the (subprocess/Slurm) worker can still be
+  closing or creating files in that window, which made `rmdir()` raise
+  `OSError: Directory not empty` and failed an otherwise successful run.
+  Cleanup is now a best-effort `shutil.rmtree(..., ignore_errors=True)`.
+
 ### Changed
 
 - Switched the local/CI code-quality gate from pre-commit to

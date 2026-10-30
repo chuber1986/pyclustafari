@@ -1,6 +1,7 @@
 """Function wrapper classes."""
 
 import logging
+import shutil
 import time
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
@@ -175,10 +176,12 @@ class Runnable:
         if self.tempdir is None or not self.tempdir.exists():
             return
 
-        for file in self.tempdir.iterdir():
-            file.unlink(missing_ok=True)
-
-        self.tempdir.rmdir()
+        # Best-effort recursive removal. A plain unlink-then-rmdir races with
+        # the (subprocess/slurm) worker, which can still be closing or creating
+        # files in the directory at this point, leaving rmdir with a non-empty
+        # directory and raising OSError. rmtree + ignore_errors removes what's
+        # there and never fails the run for a cleanup hiccup.
+        shutil.rmtree(self.tempdir, ignore_errors=True)
 
     def _read_state_file(self) -> State:
         if self.statefile is None or not self.statefile.exists():
