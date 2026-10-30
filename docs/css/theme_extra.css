@@ -1,0 +1,201 @@
+/*
+ * SAL brand overrides for the built-in "readthedocs" theme.
+ *
+ * This file REPLACES the theme's stock theme_extra.css (documented in the
+ * theme header as the place for such modifications), so it also carries the
+ * theme's own fixups (code wrapping, search styling) plus the SAL palette:
+ *   primary  #009A9B (teal)   accent #F1EA75 (yellow)
+ *   text     #111111          secondary text #706F6F
+ *
+ * It is loaded after css/theme.css, so equal-specificity rules below win.
+ */
+
+/* ---- SAL identity: Inter everywhere the theme uses Lato / Roboto Slab ---- */
+body {
+    font-family: "Inter", proxima-nova, "Helvetica Neue", Arial, sans-serif;
+    color: #111111;
+}
+h1, h2, h3, h4, h5, h6,
+.rst-content h1, .rst-content h2, .rst-content h3,
+.rst-content h4, .rst-content h5, .rst-content h6,
+.wy-menu-vertical header {
+    font-family: "Inter", "Roboto Slab", Georgia, serif;
+}
+
+/* ---- Sidebar: SAL teal header, full-color logo on a white chip ----
+ * The logo keeps its original SAL colors (teal mark + gray wordmark), so it
+ * sits on a white chip instead of the teal header background. */
+.wy-nav-top,
+.wy-side-nav-search {
+    background-color: #009A9B !important;
+}
+.wy-side-nav-search img.logo,
+.wy-nav-top img.logo {
+    display: inline-block;
+    margin: 0 auto 0.809em;
+    height: auto;
+    width: auto;
+    max-height: 56px;
+    max-width: 75%;
+    background-color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+/* ---- Navigation ---- */
+.wy-nav .wy-menu-vertical header {
+    color: #009A9B;
+}
+.wy-nav .wy-menu-vertical a:hover {
+    background-color: #009A9B;
+    color: #fff;
+}
+.wy-menu-vertical a:active {
+    background-color: #009A9B;
+    color: #fff;
+}
+.wy-menu-vertical li.on a,
+.wy-menu-vertical li.current a,
+.wy-menu-vertical li.toctree-l1.current > a {
+    background-color: rgba(0, 154, 155, 0.12);
+    border-right: 3px solid #F1EA75;
+    color: #009A9B;
+}
+.wy-menu-vertical li.current li.on > a {
+    background-color: rgba(0, 154, 155, 0.12);
+}
+
+/* ---- Links ---- */
+a {
+    color: #009A9B;
+}
+a:hover {
+    color: #007a7b;
+}
+a:visited {
+    color: #706F6F;
+}
+.rst-content a code, .rst-content a tt {
+    color: #009A9B;
+}
+.rst-versions a {
+    color: #009A9B;
+}
+
+/* ---- Content ---- */
+h1, h2, h3, h4, h5, h6 {
+    color: #111111;
+}
+h1 {
+    border-bottom: 2px solid #009A9B;
+}
+
+/* ---- Code ---- */
+.rst-content code {
+    color: #E74C3C;
+}
+.rst-content pre code {
+    color: #000;
+    background: #f8f8f8;
+}
+a code {
+    color: #009A9B;
+}
+a:hover code {
+    color: #007a7b;
+}
+a:visited code {
+    color: #706F6F;
+}
+
+/* ---- Footer ---- */
+.rst-versions {
+    background-color: #fff;
+    color: #111111;
+}
+.rst-versions .rst-current-version {
+    background-color: #009A9B;
+    color: #fff;
+}
+.rst-versions .rst-current-version .fa-book,
+.rst-versions .rst-current-version .icon-book {
+    color: #fff;
+}
+
+/*
+ * ---- Fixups ported from the theme's stock theme_extra.css ----
+ * (They live in that file, which this file replaces, so they must be
+ * repeated here or inline-code wrapping and search styling break.)
+ */
+.rst-content code {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    padding: 2px 5px;
+}
+.rst-content pre code {
+    white-space: pre;
+    word-wrap: normal;
+    display: block;
+    padding: 12px;
+    font-size: 12px;
+}
+pre .cs, pre .c {
+    font-weight: inherit;
+    font-style: inherit;
+}
+.rst-content .no-highlight {
+    display: block;
+    padding: 0.5em;
+    color: #333;
+}
+.search-results {
+    margin-top: 23px;
+}
+.search-results article {
+    border-top: 1px solid #E1E4E5;
+    padding-top: 24px;
+}
+.search-results article:first-child {
+    border-top: none;
+}
+form .search-query {
+    width: 100%;
+    border-radius: 50px;
+    padding: 6px 12px;
+    border-color: #D1D4D5;
+}
+.rst-content .admonition code {
+    color: #404040;
+    border: 1px solid #c7c9cb;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: #f8fbfd;
+    background: rgba(255, 255, 255, 0.7);
+}
+.rst-content .section .docutils {
+    width: 100%;
+    overflow: auto;
+    display: block;
+    border: none;
+}
+td, th {
+    border: 1px solid #e1e4e5 !important;
+    border-collapse: collapse;
+}
+.wy-nav-side {
+    padding-bottom: 40px;
+}
+.wy-menu-vertical .current-section p {
+    background-color: #e3e3e3;
+    color: #404040;
+}
+.rst-versions .rst-current-version {
+    padding: 0 12px;
+    display: flex;
+    font-size: initial;
+    justify-content: space-between;
+    align-items: center;
+    line-height: 40px;
+}
+.rst-current-version span {
+    flex: 1;
+    text-align: center;
+}

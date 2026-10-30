@@ -6,10 +6,12 @@ To use PyClustafari in a project
 from clustafari import ClusterContext, SlurmConfig, wrap_non_picklable_objects
 from clustafari.resources import CPUPerTaskResource, MemoryPerNodeResource
 
+
 @wrap_non_picklable_objects
 def custom_fn(param):
     # ...
     return param + 1
+
 
 cfg = SlurmConfig(
     CPUPerTaskResource(1),

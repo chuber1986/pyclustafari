@@ -17,7 +17,7 @@
 Runs Python functions on a cluster infrastructure.
 
 - Documentation: <https://github.com/chuber1986/pyclustafari/>
-- GitLab: <https://github.com/chuber1986/pyclustafari/>
+- GitHub: <https://github.com/chuber1986/pyclustafari/>
 - Free software: MIT license
 
 ## Abstract
@@ -46,7 +46,7 @@ The function, parameters and context data are serialized and stored on a shared 
 <a name="requirements-and-dependencies"></a>
 
 - Tested on Linux
-- PySlurm 25.11
+- PySlurm 26.5 (Slurm 26.05)
 - Python (tested with Python3.14)
 
 ## Getting started
@@ -69,18 +69,19 @@ $ uv sync
 
 If 'pyslurm' can't be installed, use 'uv env && uv pip install pip' to create an empty environment. Manually install 'pyslurm' with the version matching the Slurm version of your cluster. Afterwards, rerun 'uv sync'.
 
-### pre-commit usage explicit (for devs only)
+### prek usage explicit (for devs only)
 
 ```bash
-$ pre-commit run -a
+$ uv run prek run --all-files
 ```
 
-### pre-commit usage during git commit
+### prek usage during git commit
 
 Once after cloning the repository run:
 
 ```bash
-$ pre-commit install
+$ uv run prek install
+$ uv run prek install --hook-type commit-msg
 ```
 
 Use [ConventionalCommits](https://www.conventionalcommits.org) syntax for commit messages.

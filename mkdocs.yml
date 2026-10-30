@@ -1,8 +1,10 @@
-site_name: PyClustafari
-site_url: https://github.com/chuber1986/pyclustafari
+site_name: pyclustafari
+site_description: "Run Python functions on a Slurm cluster from a script or notebook."
 repo_url: https://github.com/chuber1986/pyclustafari
 repo_name: pyclustafari
-#strict: true
+docs_dir: docs
+site_dir: site
+
 nav:
   - Home: index.md
   - Installation: installation.md
@@ -10,72 +12,36 @@ nav:
   - Modules: api.md
   - Contributing: contributing.md
   - Changelog: changelog.md
+
 theme:
-  name: material
-  language: en
-  logo: gfx/logo.png
-  palette:
-    scheme: preference
-    primary: teal
-    accent: teal
-  features:
-    - navigation.indexes
-    - navigation.instant
-    - navigation.tabs.sticky
+  name: readthedocs
+  logo: assets/SAL_Logo_ohneZusatz.svg
+  include_homepage_in_sidebar: true
+  navigation_depth: 4
+  titles_only: false
+  sticky_navigation: true
+  highlightjs: true
+  hljs_style: github
+  custom_dir: overrides
+
 markdown_extensions:
-  - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
-  - pymdownx.critic
-  - pymdownx.caret
-  - pymdownx.mark
-  - pymdownx.tilde
-  - pymdownx.tabbed
-  - attr_list
-  - pymdownx.arithmatex:
-      generic: true
-  - pymdownx.highlight:
-      linenums: false
-  - pymdownx.superfences
-  - pymdownx.inlinehilite
-  - pymdownx.details
   - admonition
-  - toc:
-      baselevel: 2
-      permalink: true
-      slugify: !!python/name:pymdownx.slugs._uslugify
-  - meta
+  - codehilite
+  - toc
+  - tables
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.mark
+  - pymdownx.tasklist
+
 plugins:
+  - search
   - include-markdown
-  - search:
-      lang: en
-#  - autorefs
   - mkdocstrings:
-      watch:
-        - pyclustafari
-extra:
-  social:
-    # - icon: fontawesome/brands/twitter
-    #   # replace with your own tweet link below
-    #   link: https://github.com/chuber1986/pyclustafari
-    #   name: Tweet
-    # - icon: fontawesome/brands/facebook
-    #   # replace with your own facebook link below
-    #   link: https://github.com/chuber1986/pyclustafari
-    #   name: Facebook
-    - icon: material/web
-      link: "https://silicon-austria-labs.com/"
-    - icon: fontawesome/brands/linkedin
-      link: https://www.linkedin.com/company/silicon-austria-labs
-      name: LinkedIn
-    - icon: fontawesome/brands/gitlab
-      link: https://github.com/chuber1986/pyclustafari
-      name: Gitlab
-    - icon: material/email
-      link: "mailto:hiddenaddress@gmail.com"
-  # to enable disqus, uncomment the following and put your disqus id below
-  # disqus: disqus_id
-# uncomment the following and put your google tracking id below to enable GA
-#google_analytics:
-  #- UA-xxx
-  #- auto
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: false

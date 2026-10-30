@@ -70,10 +70,11 @@ Ready to contribute? Here's how to set up clustafari for local development.
    The Slurm runner requires pyslurm; `DummyConfig` and `SubprocessConfig`
    work without it.
 
-4. Install the pre-commit hooks (once after cloning):
+4. Install the prek hooks (once after cloning):
 
    ```bash
-   $ pre-commit install
+   $ uv run prek install
+   $ uv run prek install --hook-type commit-msg
    ```
 
 5. Create a branch for local development:
@@ -84,11 +85,11 @@ Ready to contribute? Here's how to set up clustafari for local development.
 
    Now you can make your changes.
 
-6. When you're done making your changes, make sure the linters and tests pass:
+6. When you're done making your changes, make sure the linters, type
+   checker, and tests pass (the same gate CI runs):
 
    ```bash
-   $ pre-commit run -a
-   $ pytest
+   $ uv run prek run --all-files
    ```
 
 7. Commit your changes and push the branch to GitHub:
@@ -110,7 +111,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put the new functionality into a function with a docstring, and add the feature to the list in README.md.
-3. The pull request should work on the supported Python versions (>= 3.12) and pass `pre-commit run -a`.
+3. The pull request should work on the supported Python versions (>= 3.12) and pass `uv run prek run --all-files`.
 
 ## Tips
 
