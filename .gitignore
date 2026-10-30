@@ -98,6 +98,10 @@ ENV/
 
 # mkdocs documentation
 /site
+/public
+
+# CI Slurm environment extracted for building pyslurm
+.slurm-26.05/
 
 # mypy
 .mypy_cache/
