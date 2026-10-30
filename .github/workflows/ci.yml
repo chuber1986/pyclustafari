@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: uv
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v10
 
       - name: Extract Slurm 26.05 client environment
         # pyslurm 26.5.x (Slurm 26.05) needs matching headers/libraries to
@@ -76,7 +76,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: uv
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v10
 
       - name: Extract Slurm 26.05 client environment
         # `uv sync` builds the pyslurm dependency from its git-pinned source
