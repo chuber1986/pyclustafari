@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+### Changed
+
+- Switched the local/CI code-quality gate from pre-commit to
+  [prek](https://github.com/j178/prek) with a native `prek.toml`; `.pre-commit-config.yaml`
+  is removed. The gate covers repository-integrity checks, conventional-commit
+  message linting, `uv lock`/`uv sync`, shellcheck, ruff (format + check), the
+  `ty` type checker, mdformat, nbstripout, Prettier (YAML/JSON), and the
+  pytest suite; run it locally with `uv run prek run --all-files`.
+- Added a GitHub Actions CI pipeline (`.github/workflows/ci.yml`) analogous to
+  the useful-utilities GitLab CI: a `checks` job runs the prek gate, a `docs`
+  job builds the mkdocs site, and a `deploy` job publishes it to GitHub Pages.
+  pyslurm is built in CI against a Slurm 26.05 client environment extracted
+  from the `giovtorres/slurm-docker` image (the image PySlurm's own CI uses)
+  via `scripts/extract_slurm_env.sh`.
+- The documentation site now uses the mkdocs Read the Docs theme with SAL
+  branding (matching the useful-utilities docs) instead of mkdocs-material;
+  docs dependencies moved to a dedicated `docs` uv group
+  (`uv sync --locked --group docs`).
+- `pyslurm` is now a git-pinned dependency
+  (`[tool.uv.sources]` in `pyproject.toml`) instead of a sibling path
+  dependency, so `uv lock` / `uv sync` work from any checkout; the pin points
+  at the PySlurm commit this tree was developed against (Slurm 26.05.x).
+- `test_slurm_runner_config` now skips when no Slurm is available, like the
+  other Slurm runner tests.
+
 ### Fixed
 
 - A failed run preparation (`Runnable.execute()` — hashing, temp-dir creation,

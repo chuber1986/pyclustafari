@@ -1,39 +1,33 @@
 # Installation
 
-## Stable release
-
-This will only work if the project was uploaded to the Python Package Index (PyPI).
-
-To install PyClustafari, run this command in your
-terminal:
-
-```console
-$ pip install pyclustafari
-```
-
-This is the preferred method to install PyClustafari, as it will always install the most recent stable release.
-
-If you don't have [pip] installed, this [Python installation guide]
-can guide you through the process.
-
-## From source
-
-The source for PyClustafari can be downloaded from
-the [Gitlab repo][].
-
-Clone the repository:
+`pyclustafari` installs the `clustafari` package. It is developed with
+[uv](https://docs.astral.sh/uv/); use Python **3.12+**.
 
 ```console
 $ git clone https://github.com/chuber1986/pyclustafari
+$ cd pyclustafari
+$ uv sync
 ```
 
-It is highly recommended to use the SSH link (starting with 'git:') instead of the HTTPS link (staring with 'https:').
+## PySlurm
 
-Once you have a copy of the source, you can install it with:
+The `Slurm` runner requires
+[PySlurm](https://github.com/PySlurm/pyslurm), whose version must match your
+cluster's Slurm version (e.g. PySlurm 26.5.x for Slurm 26.05.x). PySlurm is a
+Cython extension that builds against the cluster's Slurm headers and
+libraries, so if `uv sync` cannot build it in your environment:
 
-```console
-$ pip install .
-```
+1. Create the environment without it:
 
-[pip]: https://pip.pypa.io
-[python installation guide]: http://docs.python-guide.org/en/latest/starting/installation/
+   ```console
+   $ uv env
+   $ uv pip install pip
+   ```
+
+2. Install the PySlurm version matching your cluster's Slurm, then finish:
+
+   ```console
+   $ uv sync
+   ```
+
+`DummyConfig` and `SubprocessConfig` work without PySlurm.
