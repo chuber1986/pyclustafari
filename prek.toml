@@ -1,0 +1,154 @@
+# prek native configuration (j178/prek).
+#
+# Hook scheduling uses explicit `priority` values: lower runs first, hooks
+# sharing a priority run concurrently. Every auto-fixing hook therefore gets
+# its own priority so the fix-then-check order is unambiguous:
+#
+#   0  repository integrity checks (prek built-in)
+#   1  commit message lint (conventional-pre-commit, commit-msg stage)
+#   2  uv lock / sync (uv-pre-commit)
+#   3  shellcheck (shellcheck-py)
+#   4  ruff format (ruff-pre-commit)
+#   5  ruff check --fix (ruff-pre-commit)
+#   6  ty type check (allganize/ty-pre-commit, ty 0.0.11)
+#   7  mdformat (executablebooks/mdformat)
+#   8  nbstripout (kynan/nbstripout)
+#   9  Prettier for YAML/JSON only (mirrors-prettier)
+#   10 pytest (local system hook)
+
+[[repos]]
+repo = "builtin"
+
+  [[repos.hooks]]
+  id = "check-added-large-files"
+  priority = 0
+
+  [[repos.hooks]]
+  id = "detect-private-key"
+  priority = 0
+
+  [[repos.hooks]]
+  id = "check-merge-conflict"
+  # --assume-in-merge: CI runs outside an active merge, so the hook needs
+  # this to flag stray conflict markers in committed files.
+  args = ["--assume-in-merge"]
+  priority = 0
+
+  [[repos.hooks]]
+  id = "end-of-file-fixer"
+  priority = 0
+
+  [[repos.hooks]]
+  id = "trailing-whitespace"
+  # Preserve intentional Markdown hard line breaks (two trailing spaces).
+  args = ["--markdown-linebreak-ext=md"]
+  priority = 0
+
+  [[repos.hooks]]
+  id = "check-toml"
+  priority = 0
+
+  [[repos.hooks]]
+  id = "check-json"
+  priority = 0
+
+  [[repos.hooks]]
+  id = "check-yaml"
+  priority = 0
+
+[[repos]]
+repo = "https://github.com/compilerla/conventional-pre-commit"
+rev = "v4.2.0"
+
+  [[repos.hooks]]
+  id = "conventional-pre-commit"
+  stages = ["commit-msg"]
+  priority = 1
+
+[[repos]]
+repo = "https://github.com/astral-sh/uv-pre-commit"
+rev = "0.7.15"
+
+  [[repos.hooks]]
+  id = "uv-lock"
+  priority = 2
+
+  [[repos.hooks]]
+  id = "uv-sync"
+  priority = 2
+
+[[repos]]
+repo = "https://github.com/shellcheck-py/shellcheck-py"
+rev = "v0.10.0.1"
+
+  [[repos.hooks]]
+  id = "shellcheck"
+  priority = 3
+
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.14.11"
+
+  [[repos.hooks]]
+  id = "ruff-format"
+  priority = 4
+
+  [[repos.hooks]]
+  id = "ruff-check"
+  args = ["--fix", "--exit-non-zero-on-fix"]
+  priority = 5
+
+[[repos]]
+repo = "https://github.com/allganize/ty-pre-commit"
+rev = "v0.0.11"
+
+  [[repos.hooks]]
+  id = "ty-check"
+  # Type-check against the project venv so pyslurm (a compiled extension)
+  # and the other project dependencies resolve.
+  args = ["--python", ".venv"]
+  priority = 6
+
+[[repos]]
+repo = "https://github.com/executablebooks/mdformat"
+rev = "0.7.22"
+
+  [[repos.hooks]]
+  id = "mdformat"
+  args = ["--number"]
+  additional_dependencies = [
+    "mdformat-gfm",
+    "mdformat-tables",
+    "mdformat_frontmatter",
+  ]
+  priority = 7
+
+[[repos]]
+repo = "https://github.com/kynan/nbstripout"
+rev = "0.8.1"
+
+  [[repos.hooks]]
+  id = "nbstripout"
+  priority = 8
+
+[[repos]]
+repo = "https://github.com/mirrors-prettier/mirrors-prettier"
+rev = "v3.9.9"
+
+  [[repos.hooks]]
+  id = "prettier"
+  # types is logical AND (a file is either yaml or json, never both);
+  # types_or formats YAML and JSON files.
+  types_or = ["yaml", "json"]
+  priority = 9
+
+[[repos]]
+repo = "local"
+
+  [[repos.hooks]]
+  id = "pytest"
+  name = "pytest"
+  entry = "uv run pytest -v"
+  language = "system"
+  pass_filenames = false
+  priority = 10
