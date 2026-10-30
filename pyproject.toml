@@ -25,15 +25,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pre-commit>=2.12.0",
+    "prek>=0.5.4,<0.6.0",
     "pytest-runner>=6.0.0",
     "pytest>=7.2.0",
     "pytest_cov>=4.0.0",
-    "mkdocs>=1.4.2",
-    "mkdocs-include-markdown-plugin>=3.9.1",
-    "mkdocs-material>=8.5.8",
-    "mkdocstrings[python]>=0.19.0",
-    "mkdocs-autorefs>=0.4.1",
     "ipykernel>=7.1.0",
     "numpy",
     "matplotlib",
@@ -41,7 +36,10 @@ dev = [
     "jupyter",
     "uv>=0.9.25",
     "ruff>=0.14.11",
-    "ty>=0.0.11",
+]
+docs = [
+    "mkdocs-include-markdown-plugin>=3.9.1",
+    "mkdocstrings[python]>=0.28",
 ]
 
 [project.urls]
@@ -52,7 +50,11 @@ Repository = "https://github.com/chuber1986/pyclustafari"
 Changelog = "https://github.com/chuber1986/pyclustafari/blob/main/CHANGELOG.md"
 
 [tool.uv.sources]
-pyslurm = { path = "../pyslurm" }
+# Pinned to the pyslurm commit this tree was developed and tested against
+# (Slurm 26.05.x). Bump `rev` when moving to a new Slurm/pyslurm version and
+# re-lock. CI builds it against Slurm 26.05 headers/libraries extracted from
+# the giovtorres/slurm-docker image (see .github/workflows/ci.yml).
+pyslurm = { git = "https://github.com/PySlurm/pyslurm.git", rev = "1e97f854a871fdd8f2adebffc2f9418eb40a58b6" }
 
 
 [build-system]
