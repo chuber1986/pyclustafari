@@ -117,6 +117,10 @@ jobs:
     needs: docs
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    permissions:
+      # deploy-pages exchanges the GITHUB_TOKEN for a Pages OIDC token.
+      contents: read
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
