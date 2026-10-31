@@ -33,6 +33,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Allow git in the container
+        # The uv container runs git as a different uid than the checkout
+        # ownership, which git treats as "dubious ownership".
+        run: git config --global --add safe.directory "${{ github.workspace }}"
+
       - name: uv
         uses: astral-sh/setup-uv@v10.3.3
 
