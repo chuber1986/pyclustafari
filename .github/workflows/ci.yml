@@ -71,7 +71,9 @@ jobs:
     name: mkdocs
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      # Reading the checkout is all the build and the Pages artifact upload
+      # need; deployment happens in the deploy job.
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -118,9 +120,12 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     permissions:
-      # deploy-pages exchanges the GITHUB_TOKEN for a Pages OIDC token.
+      # deploy-pages exchanges the GITHUB_TOKEN for a Pages OIDC token
+      # (id-token: write) and then creates the deployment (pages: write);
+      # it also needs to read the repo for the Pages artifact.
       contents: read
       id-token: write
+      pages: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
