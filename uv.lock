@@ -328,7 +328,7 @@ docs = [
 requires-dist = [
     { name = "joblib" },
     { name = "pyprojroot" },
-    { name = "pyslurm", git = "https://github.com/PySlurm/pyslurm.git?rev=1e97f854a871fdd8f2adebffc2f9418eb40a58b6" },
+    { name = "pyslurm", directory = "third-party/pyslurm" },
     { name = "pyyaml" },
 ]
 
@@ -1842,8 +1842,16 @@ wheels = [
 
 [[package]]
 name = "pyslurm"
-version = "26.5.0"
-source = { git = "https://github.com/PySlurm/pyslurm.git?rev=1e97f854a871fdd8f2adebffc2f9418eb40a58b6#1e97f854a871fdd8f2adebffc2f9418eb40a58b6" }
+source = { directory = "third-party/pyslurm" }
+
+[package.metadata]
+requires-dist = [
+    { name = "cython-lint", marker = "extra == 'dev'" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-sugar", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "pytest"

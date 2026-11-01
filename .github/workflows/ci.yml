@@ -1,12 +1,13 @@
 # GitHub CI, analogous to useful-utilities' .gitlab-ci.yml:
 #
 #   checks   = prek gate (`uv run prek run --all-files`; pytest is a local
-#              prek hook). pyslurm is a git-pinned dependency (see
-#              [tool.uv.sources] in pyproject.toml); because it must be built
-#              against Slurm 26.05 headers/libraries that the GitHub runners
-#              do not have, the job first extracts a client Slurm environment
-#              from the giovtorres/slurm-docker image (the image PySlurm's
-#              own CI builds against) and points the build at it.
+#              prek hook). pyslurm is built from the git submodule in
+#              third-party/pyslurm (see [tool.uv.sources] in pyproject.toml);
+#              because it must be built against Slurm 26.05 headers/libraries
+#              that the GitHub runners do not have, the job first extracts a
+#              client Slurm environment from the giovtorres/slurm-docker image
+#              (the image PySlurm's own CI builds against) and points the build
+#              at it.
 #
 #   docs     = mkdocs build (Read the Docs theme, SAL branding) published to
 #              GitHub Pages from the default branch.
@@ -31,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: uv
         uses: astral-sh/setup-uv@v10.3.3
@@ -77,13 +80,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: uv
         uses: astral-sh/setup-uv@v10.3.3
 
       - name: Extract Slurm 26.05 client environment
-        # `uv sync` builds the pyslurm dependency from its git-pinned source
-        # against the Slurm 26.05 headers/libraries (see the checks job).
+        # `uv sync` builds the pyslurm submodule against the Slurm 26.05
+        # headers/libraries (see the checks job).
         id: slurm
         uses: actions/cache@v4
         with:
