@@ -1,0 +1,3 @@
+[submodule "third-party/pyslurm"]
+	path = third-party/pyslurm
+	url = https://github.com/PySlurm/pyslurm.git

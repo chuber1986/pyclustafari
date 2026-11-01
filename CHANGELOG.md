@@ -28,10 +28,13 @@
   branding (matching the useful-utilities docs) instead of mkdocs-material;
   docs dependencies moved to a dedicated `docs` uv group
   (`uv sync --locked --group docs`).
-- `pyslurm` is now a git-pinned dependency
-  (`[tool.uv.sources]` in `pyproject.toml`) instead of a sibling path
-  dependency, so `uv lock` / `uv sync` work from any checkout; the pin points
-  at the PySlurm commit this tree was developed against (Slurm 26.05.x).
+- `pyslurm` is now a git submodule vendored at `third-party/pyslurm` (checked
+  out detached at the PySlurm commit this tree was developed against,
+  Slurm 26.05.x / branch 26.5.x, commit 1e97f854) instead of a git-pinned
+  remote dependency; `uv sync` builds the checked-out source. Cloning now
+  requires `--recurse-submodules`. To move to a new Slurm/pyslurm version,
+  check out the matching branch tip in the submodule, run `uv lock`, and
+  commit the updated submodule pointer.
 - `test_slurm_runner_config` now skips when no Slurm is available, like the
   other Slurm runner tests.
 

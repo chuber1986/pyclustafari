@@ -44,10 +44,10 @@ Ready to contribute? Here's how to set up clustafari for local development.
 
 1. Fork the `pyclustafari` repo on GitHub.
 
-2. Clone your fork locally:
+2. Clone your fork locally (with the PySlurm submodule):
 
    ```bash
-   $ git clone https://github.com/<you>/pyclustafari.git
+   $ git clone --recurse-submodules https://github.com/<you>/pyclustafari.git
    $ cd pyclustafari
    ```
 
@@ -57,8 +57,13 @@ Ready to contribute? Here's how to set up clustafari for local development.
    $ uv sync
    ```
 
-   If `pyslurm` can't be installed (it must be built against the cluster's
-   Slurm libraries), create the environment without it:
+   `uv sync` builds `pyslurm` from the vendored submodule
+   `third-party/pyslurm` against the local Slurm headers/libraries. To
+   support a new Slurm version, check out the matching PySlurm branch in
+   `third-party/pyslurm` (detached, at the branch tip), run `uv lock`, and
+   commit the updated submodule pointer. If `pyslurm` can't be built
+   (it must be built against the cluster's Slurm libraries), create the
+   environment without it:
 
    ```bash
    $ uv env

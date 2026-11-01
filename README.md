@@ -55,7 +55,7 @@ The function, parameters and context data are serialized and stored on a shared 
 Download repository:
 
 ```bash
-$ git clone https://github.com/chuber1986/pyclustafari
+$ git clone --recurse-submodules https://github.com/chuber1986/pyclustafari
 $ cd pyclustafari
 ```
 
@@ -67,7 +67,7 @@ Create environment:
 $ uv sync
 ```
 
-If 'pyslurm' can't be installed, use 'uv env && uv pip install pip' to create an empty environment. Manually install 'pyslurm' with the version matching the Slurm version of your cluster. Afterwards, rerun 'uv sync'.
+`uv sync` builds PySlurm from the vendored submodule `third-party/pyslurm` against the local Slurm headers/libraries. To support a new Slurm version, checkout the matching PySlurm branch (see `third-party/pyslurm`) in the submodule, run `uv lock`, and commit the updated submodule pointer. If 'pyslurm' can't be built this way, use 'uv env && uv pip install pip' to create an empty environment. Manually install 'pyslurm' with the version matching the Slurm version of your cluster. Afterwards, rerun 'uv sync'.
 
 ### prek usage explicit (for devs only)
 

@@ -50,11 +50,16 @@ Repository = "https://github.com/chuber1986/pyclustafari"
 Changelog = "https://github.com/chuber1986/pyclustafari/blob/main/CHANGELOG.md"
 
 [tool.uv.sources]
-# Pinned to the pyslurm commit this tree was developed and tested against
-# (Slurm 26.05.x). Bump `rev` when moving to a new Slurm/pyslurm version and
-# re-lock. CI builds it against Slurm 26.05 headers/libraries extracted from
-# the giovtorres/slurm-docker image (see .github/workflows/ci.yml).
-pyslurm = { git = "https://github.com/PySlurm/pyslurm.git", rev = "1e97f854a871fdd8f2adebffc2f9418eb40a58b6" }
+# The pyslurm git submodule checked out at the commit this tree was developed
+# and tested against (Slurm 26.05.x; branch 26.5.x, commit 1e97f854).
+# `uv sync` builds the checked-out source against the local/CI Slurm 26.05
+# headers/libraries (CI extracts them from the giovtorres/slurm-docker image,
+# see .github/workflows/ci.yml). To move to a new Slurm/pyslurm version:
+#   1. in third-party/pyslurm: git fetch && git checkout <commit> (the tip of
+#      the branch for the new Slurm version),
+#   2. uv lock,
+#   3. commit the updated submodule pointer.
+pyslurm = { path = "third-party/pyslurm" }
 
 
 [build-system]
