@@ -1,7 +1,9 @@
 """Function wrapper classes."""
 
 import logging
+import pickle
 import shutil
+import struct
 import time
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
@@ -47,9 +49,9 @@ class Runnable:
     def __init__(
         self,
         fn: Callable,
-        *args: list,
+        *args: Any,
         return_object: bool = False,
-        **kwargs: dict,
+        **kwargs: Any,
     ) -> None:
         """Initialize Runnable with callable function and arguments."""
         self._state: RunState = RunState.INITIALIZED
@@ -198,7 +200,12 @@ class Runnable:
 
         try:
             return joblib.load(file)
-        except EOFError:
+        except (EOFError, struct.error, OSError, ValueError, pickle.UnpicklingError):
+            # The result file is written by the worker (possibly over NFS) and
+            # can be truncated or corrupted mid-read (a torn pickle raises
+            # struct.error/EOFError, a partial write OSError). Treat any
+            # unreadable result as "no result" so get() reports a failed run
+            # instead of crashing with a raw deserialization error.
             return None, None
 
     def _read_file(self, file: Path | None) -> str:
@@ -257,6 +264,12 @@ class Runnable:
             self._read_result_files()
 
         if self._state == RunState.FAILED:
+            # The worker has reported its terminal (failed) state, so no
+            # process will touch the run's artifacts anymore. Delete them now
+            # (the success path cleans up in _read_result_files); otherwise a
+            # failed run whose handle outlives get() (e.g. a DummyRunner
+            # failure) leaves the tempdir behind until garbage collection.
+            self._delete_temp_files()
             msg = (
                 "Execution failed. No result available.\nClustafari Log:\n"
                 f"{self._info.log}\n\nExecution Error:\n{self._info.error!s}"
