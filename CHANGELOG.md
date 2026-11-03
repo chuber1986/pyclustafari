@@ -4,11 +4,29 @@
 
 ### Fixed
 
-- `Runnable._delete_temp_files()` unlinked the run's temp files one by one and
-  then `rmdir()` the directory; the (subprocess/Slurm) worker can still be
-  closing or creating files in that window, which made `rmdir()` raise
-  `OSError: Directory not empty` and failed an otherwise successful run.
-  Cleanup is now a best-effort `shutil.rmtree(..., ignore_errors=True)`.
+- `Runnable.get()` no longer leaves the run's `~/.clustafari/<hash>` tempdir
+  behind when the execution failed: the artifacts are now deleted as soon as
+  `get()` reports the failure (previously they were only removed on success or
+  when the `Runnable` was garbage collected). `Runnable.__del__()` remains as
+  a backstop for runs whose result is never retrieved (issue #7).
+- `Runnable._read_job_file()` only degraded a corrupt result file to "no
+  result" for `EOFError`; a truncated pickled result file (a torn write, e.g.
+  over NFS) raises `struct.error`/`UnpicklingError`, which crashed `get()`
+  with a raw deserialization error. All unreadable-result conditions
+  (`EOFError`, `struct.error`, `OSError`, `ValueError`,
+  `pickle.UnpicklingError`) now report the run as failed instead.
+
+### Added
+
+- Test coverage raised from ~82% to 99% (issue #7): new test modules for
+  artifact cleanup (`tests/test_artifact_cleanup.py`), the worker stub
+  (`tests/test_workerstub.py`), `Runnable` internals and state machine
+  (`tests/test_runner.py`), runner error paths (`tests/test_runner_errors.py`),
+  `SlurmInformation` with a mocked pyslurm Job (`tests/test_slurm_info.py`),
+  `ClusterContext`/`map_async` argument handling (`tests/test_manager.py`),
+  resource value corner cases (`tests/test_resources_extra.py`),
+  `utils`/paths/config/`delayed` (`tests/test_utils.py`,
+  `tests/test_config.py`).
 
 ### Changed
 
