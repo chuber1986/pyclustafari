@@ -169,6 +169,13 @@ class Runnable:
         return False
 
     def _termination_error_message(self) -> str:
+        # Backends that own the backing execution (e.g. the subprocess worker)
+        # build a richer message including the exit code; fall back to the
+        # generic state-file-based message otherwise.
+        build = getattr(self._info, "termination_error_message", None)
+        if build is not None:
+            return build()
+
         err = self._read_file(self.errorfile).strip()
         if err:
             return f"Job terminated without writing a state file. Standard error:\n{err}"
