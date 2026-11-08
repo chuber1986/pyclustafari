@@ -225,6 +225,45 @@ def test_subprocess_runner_dead_worker_reports_failure(monkeypatch, tmp_path):
         assert time.monotonic() - start < 60
 
 
+def test_subprocess_runner_cancel_midflight_reaps_worker():
+    """Cancelling a running subprocess run kills and reaps the worker (issue #12)."""
+    from clustafari.exceptions import CancelledError
+
+    with ClusterContext(SubprocessConfig()) as ctx:
+        run = ctx.apply_async(slow, 30)
+        assert run.state == RunState.READY
+
+        # Wait until the worker is actually alive and running.
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline and run.info.proc.poll() is not None:
+            time.sleep(0.05)
+        assert run.info.proc.poll() is None
+
+        run.cancel()
+
+        assert run.state == RunState.CANCELLED
+        # The worker was terminated and reaped, not left behind.
+        assert run.info.proc.poll() is not None
+        with pytest.raises(CancelledError):
+            run.get(blocking=True)
+
+
+def test_dummy_runner_cancel_after_inline_finish_is_noop():
+    """Dummy runs execute inline, so apply_async returns them FINISHED.
+
+    Cancelling such a run must be a no-op: the result stays retrievable and
+    the state stays FINISHED. (Cancelling before dispatch — INITIALIZED →
+    CANCELLED — is covered by the Runnable unit tests; a dummy run cannot be
+    observed in that state through the public API.)
+    """
+    with ClusterContext(DummyConfig()) as ctx:
+        run = ctx.apply_async(fn0)
+        assert run.state == RunState.FINISHED
+        run.cancel()
+        assert run.state == RunState.FINISHED
+        assert run.get(blocking=True) == 1
+
+
 def test_return_object_dummy():
     with ClusterContext(DummyConfig()) as ctx:
         acc = Acc()

@@ -18,3 +18,12 @@ class RunInformation:
         execution (e.g. Slurm) override this.
         """
         return False
+
+    def cancel(self) -> None:
+        """Stop the backing execution (best-effort).
+
+        The base information has no external execution to stop; backends
+        with one (subprocess worker, Slurm job) override this. Failures of
+        the stop mechanism are logged by `Runnable.cancel()` and do not
+        prevent the run's transition to cancelled.
+        """

@@ -11,6 +11,9 @@ __all__ = ["SubprocessInformation"]
 class SubprocessInformation(RunInformation):
     """Provides information about an executed subprocess worker."""
 
+    # Seconds to wait after terminate() before escalating to kill().
+    _GRACE_SECONDS: float = 0.5
+
     def __init__(self, proc: subprocess.Popen[bytes]) -> None:
         """Initialize Subprocess Information with the worker process handle."""
         super().__init__()
@@ -27,6 +30,24 @@ class SubprocessInformation(RunInformation):
         must keep waiting.
         """
         return self.proc.poll() is not None
+
+    @override
+    def cancel(self) -> None:
+        """Terminate the worker process and reap it.
+
+        The worker is asked to terminate first; if it is still alive after a
+        short grace period it is killed. Either way the process is reaped so
+        no zombie remains.
+        """
+        if self.proc.poll() is not None:
+            return
+
+        self.proc.terminate()
+        try:
+            self.proc.wait(timeout=self._GRACE_SECONDS)
+        except subprocess.TimeoutExpired:
+            self.proc.kill()
+            self.proc.wait()
 
     def termination_error_message(self) -> str:
         """Build the failure message for a dead worker, including its exit code."""

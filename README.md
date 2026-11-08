@@ -121,6 +121,17 @@ with ClusterContext(SlurmConfig()) as ctx:
 ...
 res = run.get(blocking=True)
 plot_results(*res)
+# Cancel a run you no longer need (e.g. wrong parameters)
+from clustafari.exceptions import CancelledError
+
+with ClusterContext(SlurmConfig()) as ctx:
+    run = ctx.apply_async(function, "param1")
+if wrong_parameters:
+    run.cancel()  # stops the Slurm job / worker process
+try:
+    res = run.get(blocking=True)
+except CancelledError:
+    res = None
 # Run a function asynchronously on 2 sets of parameters and get the results
 runs = ctx.map_async(
     function,

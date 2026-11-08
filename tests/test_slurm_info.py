@@ -30,6 +30,8 @@ def fake_pyslurm(monkeypatch):
         def __init__(self):
             self.results: list = []
             self.calls = 0
+            self.cancelled_job_ids: list = []
+            self.cancel_error: Exception | None = None
 
         def load(self, job_id):
             self.calls += 1
@@ -41,6 +43,14 @@ def fake_pyslurm(monkeypatch):
             if isinstance(result, Exception):
                 raise result
             return result
+
+        def __call__(self, job_id):
+            return self
+
+        def cancel(self):
+            self.cancelled_job_ids.append("job")
+            if self.cancel_error is not None:
+                raise self.cancel_error
 
         def set(self, result):
             if isinstance(result, (list, tuple)) and result and not isinstance(result[0], Exception):
@@ -133,3 +143,44 @@ def test_del_unlinks_output_and_error_files(tmp_path, fake_pyslurm):
     del info
     gc.collect()
     assert not out.exists() and not err.exists()
+
+
+def test_cancel_calls_job_cancel_and_sets_flag(fake_pyslurm):
+    fake_pyslurm.set(FakeJob(state="RUNNING"))
+    info = SlurmInformation(123)
+    info.cancel()
+    assert fake_pyslurm.cancelled_job_ids == ["job"]
+    assert info._cancelled is True
+
+
+def test_terminated_false_after_self_cancel_despite_cancelled_job_state(fake_pyslurm):
+    # After the user cancels, the cluster reports CANCELLED with a kill
+    # signal; the run must not be misreported as a dead worker.
+    # Sequence: init's Job.load, first terminated() check, post-cancel check.
+    fake_pyslurm.set(
+        [
+            FakeJob(state="RUNNING"),
+            FakeJob(state="RUNNING"),
+            FakeJob(state="CANCELLED", exit_code_signal=9),
+        ]
+    )
+    info = SlurmInformation(123)
+    assert info.terminated() is False
+    info.cancel()
+    assert info.terminated() is False
+
+
+def test_terminated_true_for_cancelled_job_not_cancelled_by_user(fake_pyslurm):
+    # A CANCELLED job state on a run nobody cancelled here (e.g. scancel from
+    # outside) with a kill signal still means a dead worker.
+    fake_pyslurm.set(FakeJob(state="CANCELLED", exit_code_signal=9))
+    info = SlurmInformation(123)
+    assert info.terminated() is True
+
+
+def test_cancel_propagates_rpc_error(fake_pyslurm):
+    fake_pyslurm.set(FakeJob(state="RUNNING"))
+    info = SlurmInformation(123)
+    fake_pyslurm.cancel_error = pyslurm.RPCError(2017, "no such job")
+    with pytest.raises(pyslurm.RPCError):
+        info.cancel()
