@@ -11,6 +11,7 @@ from clustafari.runner import BaseRunner, RunInformation, Runnable
 from clustafari.runner.state import RunState
 
 from .config import _SubprocessConfig
+from .info import SubprocessInformation
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,11 @@ class SubprocessRunner(BaseRunner):
         env["PYTHONPATH"] = Path.cwd().as_posix() + os.pathsep + env.get("PYTHONPATH", "")
 
         try:
-            subprocess.Popen(command, env=env)  # noqa: S603
+            proc = subprocess.Popen(command, env=env)  # noqa: S603
         except OSError as e:
             runobj.fail(str(e))
+            return RunInformation()
 
-        return RunInformation()
+        info = SubprocessInformation(proc)
+        runobj.info = info
+        return info

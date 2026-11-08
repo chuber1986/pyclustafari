@@ -204,6 +204,27 @@ def test_subprocess_runner_is_async():
         assert run.get(blocking=True) == 1.4
 
 
+def test_subprocess_runner_dead_worker_reports_failure(monkeypatch, tmp_path):
+    """A worker killed before writing its state file fails the run promptly.
+
+    The packaged workerstub is replaced by a stub that exits 137 immediately,
+    so the process dies before any state file can appear. get() must raise a
+    StateError (embedding the exit code) instead of hanging forever (issue
+    #13) — exactly the Slurm backend's dead-job behavior.
+    """
+    from clustafari.exceptions import StateError
+
+    stub = tmp_path / "dying_stub.py"
+    stub.write_text("import sys; sys.exit(137)\n")
+
+    with ClusterContext(SubprocessConfig(workerstub=stub)) as ctx:
+        run = ctx.apply_async(fn0)
+        start = time.monotonic()
+        with pytest.raises(StateError, match="137"):
+            run.get(blocking=True, timeout=60)
+        assert time.monotonic() - start < 60
+
+
 def test_return_object_dummy():
     with ClusterContext(DummyConfig()) as ctx:
         acc = Acc()
