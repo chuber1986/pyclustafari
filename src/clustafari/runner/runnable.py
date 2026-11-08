@@ -11,7 +11,7 @@ from typing import Any
 
 import joblib
 
-from clustafari.exceptions import RunnableStateError, StateError, TimeoutException
+from clustafari.exceptions import CancelledError, RunnableStateError, StateError, TimeoutException
 from clustafari.paths import CLUSTAFARI_DIR
 from clustafari.utils import (
     State,
@@ -102,6 +102,32 @@ class Runnable:
         self._result = result
         self._state = RunState.FINISHED
 
+    def cancel(self) -> None:
+        """Cancel the run, transitioning it to the CANCELLED terminal state.
+
+        From INITIALIZED the run is cancelled outright (it was never
+        dispatched, so there is nothing to stop). From READY the run's
+        information object is asked to stop the backing execution
+        best-effort: a failing stop mechanism is logged as a warning and
+        does not prevent the transition. From any terminal state (FAILED,
+        FINISHED, CANCELLED) the call is a no-op.
+        """
+        if self._state in (RunState.FAILED, RunState.FINISHED, RunState.CANCELLED):
+            return
+
+        if self._state == RunState.READY:
+            try:
+                self._info.cancel()
+            except Exception:  # noqa: BLE001
+                logger.warning(
+                    "Cancellation of run '%s' failed to stop the backing execution.",
+                    repr(self),
+                    exc_info=True,
+                )
+
+        self._state = RunState.CANCELLED
+        logger.info("Cancel Runnable: %s", repr(self))
+
     @property
     def info(self) -> Any:
         """Return the result of the execution."""
@@ -150,7 +176,7 @@ class Runnable:
 
     def is_finished(self) -> bool:
         """Return whether the execution is finished."""
-        if self._state in (RunState.FINISHED, RunState.FAILED):
+        if self._state in (RunState.FINISHED, RunState.FAILED, RunState.CANCELLED):
             return True
 
         if self._state != RunState.READY:
@@ -269,6 +295,14 @@ class Runnable:
 
         if self._state == RunState.READY:
             self._read_result_files()
+
+        if self._state == RunState.CANCELLED:
+            # The run was cancelled: no result exists and the temp artifacts
+            # are no longer needed. Raise the dedicated error so callers can
+            # distinguish cancellation from failure.
+            self._delete_temp_files()
+            msg = "Execution was cancelled. No result available."
+            raise CancelledError(msg)
 
         if self._state == RunState.FAILED:
             # The worker has reported its terminal (failed) state, so no

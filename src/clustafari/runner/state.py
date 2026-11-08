@@ -10,3 +10,4 @@ class RunState(StrEnum):
     READY = auto()
     FAILED = auto()
     FINISHED = auto()
+    CANCELLED = auto()

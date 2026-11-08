@@ -43,6 +43,7 @@ class SlurmInformation(RunInformation):
         self.jobid: int = jobid
         self._terminated: bool = False
         self._terminated_checked_at: float | None = None
+        self._cancelled: bool = False
 
         from pyslurm import Job
 
@@ -69,6 +70,11 @@ class SlurmInformation(RunInformation):
         treated as termination.
         """
         now = time.monotonic()
+        if self._cancelled:
+            # The user cancelled this run through its own hook; the resulting
+            # cluster-side CANCELLED state (typically with a kill signal) is
+            # not a worker that died unexpectedly.
+            return False
         if self._terminated_checked_at is not None and now - self._terminated_checked_at < self._CHECK_INTERVAL:
             return self._terminated
         self._terminated_checked_at = now
@@ -85,6 +91,18 @@ class SlurmInformation(RunInformation):
             self._terminated = False
 
         return self._terminated
+
+    @override
+    def cancel(self) -> None:
+        """Cancel the Slurm job via the cluster interface (SIGKILL RPC).
+
+        Raises whatever the cluster interface raises (e.g. ``RPCError``);
+        `Runnable.cancel()` treats a failed stop as a warning, not a blocker.
+        """
+        from pyslurm import Job
+
+        Job(self.jobid).cancel()
+        self._cancelled = True
 
     def debug_info(self) -> dict[str, Any]:
         """Get debug information of the job."""
