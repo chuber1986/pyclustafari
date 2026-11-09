@@ -16,6 +16,7 @@ The worker writes its `.state` and `.res` artifacts with plain in-place writes (
 ## Capabilities
 
 ### New Capabilities
+
 <!-- none -->
 
 ### Modified Capabilities
