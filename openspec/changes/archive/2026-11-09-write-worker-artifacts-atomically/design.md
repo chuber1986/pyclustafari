@@ -7,10 +7,12 @@ The worker (`workerstub.py`) writes `.state` (truncate-write), `.res` (`joblib.d
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Final paths of `.state`, `.res`, `.log` never expose partial content: temp file in the same directory + `os.replace()`.
 - Corrupt-result tolerance in `_read_job_file()` logs a `logger.warning` when it triggers.
 
 **Non-Goals:**
+
 - No fsync/durability work (`os.replace` alone already fixes torn reads on the same filesystem; NFS close-to-open consistency gives the reader the renamed inode's content).
 - No change to the file layout, state vocabulary, or reader tolerance semantics (tolerance stays as safety net).
 
@@ -25,8 +27,8 @@ The worker (`workerstub.py`) writes `.state` (truncate-write), `.res` (`joblib.d
 ## Risks / Trade-offs
 
 - [Extra renames per state transition (5–7 per run)] → negligible: tiny files, metadata-only ops.
-- [Stray `.tmp` files after a mid-dump crash] → the dump helper unlinks its temp file on failure; anything left after a hard process kill is cleaned with the artifact directory by the existing cleanup and never read by the caller (reader only touches final paths).
-- [NFS `os.replace` semantics] → rename within a directory is atomic on NFSv3/v4; this is the standard technique and strictly better than in-place truncate writes.
+- \[Stray `.tmp` files after a mid-dump crash\] → the dump helper unlinks its temp file on failure; anything left after a hard process kill is cleaned with the artifact directory by the existing cleanup and never read by the caller (reader only touches final paths).
+- \[NFS `os.replace` semantics\] → rename within a directory is atomic on NFSv3/v4; this is the standard technique and strictly better than in-place truncate writes.
 
 ## Open Questions
 
