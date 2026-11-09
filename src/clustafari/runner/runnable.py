@@ -260,12 +260,18 @@ class Runnable:
 
         try:
             return joblib.load(file)
-        except (EOFError, struct.error, OSError, ValueError, pickle.UnpicklingError):
+        except (EOFError, struct.error, OSError, ValueError, pickle.UnpicklingError) as exc:
             # The result file is written by the worker (possibly over NFS) and
             # can be truncated or corrupted mid-read (a torn pickle raises
             # struct.error/EOFError, a partial write OSError). Treat any
             # unreadable result as "no result" so get() reports a failed run
             # instead of crashing with a raw deserialization error.
+            #
+            # The worker publishes artifacts atomically (temp + os.replace),
+            # so a torn write at the final path should no longer happen; this
+            # tolerance is a safety net, and any hit means a run that actually
+            # succeeded gets demoted to failed — make that visible.
+            logger.warning("Result file %s is unreadable (%s); treating as no result.", file, exc)
             return None, None
 
     def _read_file(self, file: Path | None) -> str:

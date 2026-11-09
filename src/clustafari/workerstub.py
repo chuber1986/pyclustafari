@@ -18,6 +18,30 @@ from clustafari.utils import (
 )
 
 
+def _atomic_write_text(path: Path, text: str) -> None:
+    """Write text to path atomically via a temp file in the same directory.
+
+    The final path only ever holds the complete new content: on NFS a
+    concurrent reader can observe a torn in-place write, which would e.g.
+    demote a successful run to FAILED when it hits a half-written result.
+    """
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w") as f:
+        f.write(text)
+    tmp.replace(path)
+
+
+def _atomic_dump(obj: Any, path: Path) -> None:
+    """Dump a joblib payload to path atomically."""
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    try:
+        joblib.dump(obj, tmp)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
+    tmp.replace(path)
+
+
 class StateUtils:
     """Manage execution state and logs."""
 
@@ -39,14 +63,14 @@ class StateUtils:
 
     def set_state(self, state: State) -> None:
         """Set current execution state."""
-        with self.statefile.open("w") as f:
-            f.write(str(state))
+        _atomic_write_text(self.statefile, str(state))
 
     def log(self, msg: str) -> None:
         """Write log message to logfile."""
-        with self.logfile.open("a") as f:
-            f.write(msg)
-            f.write("\n")
+        # Rewrite the accumulated log and replace: keeps append semantics
+        # ("msg is in the log when this returns") without exposing a torn
+        # in-place append to a concurrent reader.
+        _atomic_write_text(self.logfile, self.logfile.read_text() + msg + "\n")
 
 
 def execute(arguments: Any) -> None:
@@ -76,7 +100,7 @@ def execute(arguments: Any) -> None:
             result = fn(*args, **kwargs)
         utils.log("Write output")
         utils.set_state(State.DUMP_RESULT)
-        joblib.dump((fnobj, result), get_result_file(file))
+        _atomic_dump((fnobj, result), get_result_file(file))
         utils.log("Execution finished")
         utils.set_state(State.FINISHED)
     except Exception as e:  # noqa: BLE001
