@@ -8,7 +8,7 @@ import pytest
 from clustafari.annotations import delayed
 from clustafari.config import NodeConfig
 from clustafari.paths import _find_path_to
-from clustafari.runner import BaseRunner, RunInformation
+from clustafari.runner import BaseRunner
 from clustafari.resources import CPUPerTaskResource, MemoryPerNodeResource, PartitionResource
 from clustafari.runner.dummy import DummyConfig
 from clustafari.runner.slurm import SlurmConfig
@@ -16,7 +16,7 @@ from clustafari.runner.slurm import SlurmConfig
 
 class _Runner(BaseRunner):
     def _run(self, runobj):
-        return RunInformation()
+        return None
 
 
 def test_node_config_attr_access_returns_resource():

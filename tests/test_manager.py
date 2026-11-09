@@ -5,7 +5,7 @@ import pytest
 
 from clustafari import ClusterContext, DummyConfig
 from clustafari.config import NodeConfig
-from clustafari.runner import BaseRunner, RunInformation
+from clustafari.runner import BaseRunner
 from clustafari.runner.runnable import Runnable
 from clustafari.runner.state import RunState
 
@@ -15,9 +15,17 @@ class _SpyRunner(BaseRunner):
         super().__init__()
         self.calls: list[Runnable] = []
 
-    def _run(self, runobj: Runnable) -> RunInformation:
+    def _run(self, runobj: Runnable) -> None:
         self.calls.append(runobj)
-        return RunInformation()
+
+
+def test_apply_async_returns_runnable_and_discards_run_result():
+    """apply_async returns the Runnable; _run()'s (now None) result is discarded."""
+    from clustafari import DummyRunner
+
+    run = DummyRunner().apply_async(fn1, 1)
+    assert isinstance(run, Runnable)
+    assert run.get(blocking=False) == 2
 
 
 class _SpyConfig(NodeConfig):

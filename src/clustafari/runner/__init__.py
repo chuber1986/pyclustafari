@@ -9,6 +9,8 @@ from typing import Any
 from .info import RunInformation
 from .runnable import Runnable
 
+__all__ = ["BaseRunner", "RunInformation", "Runnable"]
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +32,7 @@ class BaseRunner(abc.ABC):
             **kwargs,
         )
 
-        logger.info("Execute '%s' with %s", repr(runobj), self.__class__.__name__)
+        logger.info("Execute '%s' with %s", runobj.get_function_name(), self.__class__.__name__)
         self._run(runobj)
         return runobj
 
@@ -75,4 +77,4 @@ class BaseRunner(abc.ABC):
         return runners
 
     @abc.abstractmethod
-    def _run(self, runobj: Runnable) -> RunInformation: ...
+    def _run(self, runobj: Runnable) -> None: ...

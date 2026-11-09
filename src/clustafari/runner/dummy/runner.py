@@ -17,11 +17,11 @@ class DummyRunner(BaseRunner):
     """Runs a JobLib file in the current Python process."""
 
     @override
-    def _run(self, runobj: Runnable) -> RunInformation:
+    def _run(self, runobj: Runnable) -> None:
         logger.info("Execute Runner '%s'", self.__class__.__name__)
         runobj.execute()
         if runobj.state == RunState.FAILED:
-            return RunInformation()
+            return
 
         info = RunInformation()
         out = StringIO()
@@ -32,7 +32,7 @@ class DummyRunner(BaseRunner):
                 result = runobj.function(*runobj.args, **runobj.kwargs)
             except BaseException as e:  # noqa: BLE001
                 runobj.fail(str(e))
-                return info
+                return
 
         info.output = out.getvalue()
         info.error += err.getvalue()
@@ -41,4 +41,3 @@ class DummyRunner(BaseRunner):
             runobj.finish(getattr(runobj.function, "__self__", None), result)
         else:
             runobj.finish(None, result)
-        return info
