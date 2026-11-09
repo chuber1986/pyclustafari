@@ -45,7 +45,7 @@ The system SHALL track each run through states initialized → ready → finishe
 
 ### Requirement: Worker-side state reporting
 
-The worker SHALL report its progress through the state file (started, loading, running, dumping, finished) and SHALL record a failed state with a message in the log when any exception occurs, so the caller can observe progress and death by reading files. Unrecognized non-empty state values SHALL warn and map to the initial state. An empty state file — the freshly created, not-yet-written artifact — SHALL be treated as the initial state silently, so the polling loop produces no log output until the worker first reports.
+The worker SHALL report its progress through the state file (started, loading, running, dumping, finished) and SHALL record a failed state with a message in the log when any exception occurs, so the caller can observe progress and death by reading files. All protocol files the worker writes — the state file, the result file, and the log — SHALL be published atomically: the worker writes a temporary file in the same directory and renames it onto the final path, so each final path contains either the complete previous content or the complete new content, never a partial write. Unrecognized non-empty state values SHALL warn and map to the initial state. An empty state file — the freshly created, not-yet-written artifact — SHALL be treated as the initial state silently, so the polling loop produces no log output until the worker first reports.
 
 #### Scenario: worker failure is observable
 
@@ -62,9 +62,14 @@ The worker SHALL report its progress through the state file (started, loading, r
 - **WHEN** the state file contains a non-empty value that is not a known state
 - **THEN** a warning is logged and the initial state is used
 
+#### Scenario: final paths never contain partial content
+
+- **WHEN** a reader polls a final artifact path continuously while the worker writes that artifact (e.g., a large result dump)
+- **THEN** every observed content is either absent or fully valid; a partial write is never visible at the final path
+
 ### Requirement: Result retrieval semantics
 
-The system SHALL provide retrieval on the run handle: retrieval before start raises; non-blocking retrieval on an unfinished run raises without changing run state; blocking retrieval polls until the state file reports a terminal state or the cluster-side job is observed dead, with an optional timeout deadline raising on expiry. On completion the system SHALL load the result file, harvest stdout/stderr/log into the run's information, adopt the reported terminal state, and remove the artifact directory on the success path.
+The system SHALL provide retrieval on the run handle: retrieval before start raises; non-blocking retrieval on an unfinished run raises without changing run state; blocking retrieval polls until the state file reports a terminal state or the cluster-side job is observed dead, with an optional timeout deadline raising on expiry. On completion the system SHALL load the result file, harvest stdout/stderr/log into the run's information, adopt the reported terminal state, and remove the artifact directory on the success path. Because the worker publishes artifacts atomically, an unreadable result file on an otherwise terminal run indicates a genuine failure rather than a concurrent write; the corrupt-result tolerance SHALL remain as a final safety net but SHALL log a warning when it triggers, so a silent success-to-failure demotion becomes visible.
 
 #### Scenario: not started rejected
 
@@ -84,7 +89,7 @@ The system SHALL provide retrieval on the run handle: retrieval before start rai
 #### Scenario: corrupt result file tolerated
 
 - **WHEN** the result file is unreadable, truncated, or corrupt
-- **THEN** retrieval yields a null result, marks the run failed, and does not leak a raw unpickling exception
+- **THEN** retrieval yields a null result, marks the run failed, does not leak a raw unpickling exception, and logs a warning naming the unreadable result file (the worker itself never publishes partial content at a final path)
 
 ### Requirement: Failed retrieval embeds diagnostics
 
