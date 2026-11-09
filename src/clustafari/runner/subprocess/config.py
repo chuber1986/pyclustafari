@@ -3,11 +3,10 @@
 from pathlib import Path
 
 from clustafari.config import NodeConfig
-from clustafari.paths import WORKERSTUB
 
 
 class _SubprocessConfig(NodeConfig):
     """Cluster configuration for SubprocessRunner."""
 
-    def __init__(self, runner_cls: type, workerstub: Path | str = WORKERSTUB) -> None:
+    def __init__(self, runner_cls: type, workerstub: Path | str | None = None) -> None:
         super().__init__(runner=runner_cls(self), resources={}, jobfile="", workerstub=workerstub)

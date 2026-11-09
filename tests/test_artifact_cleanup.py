@@ -13,7 +13,7 @@ import pytest
 
 from clustafari import ClusterContext, DummyConfig, SubprocessConfig
 from clustafari.exceptions import StateError
-from clustafari.paths import CLUSTAFARI_DIR
+from clustafari import paths
 
 
 def fn1(a):
@@ -26,7 +26,7 @@ def boom():
 
 def _temp_dirs():
     """Return the set of run tempdirs currently in the clustafari directory."""
-    return {p.name for p in CLUSTAFARI_DIR.iterdir() if p.is_dir()}
+    return {p.name for p in paths.clustafari_dir().iterdir() if p.is_dir()}
 
 
 def test_failed_apply_cleans_tempdir_on_context_exit():

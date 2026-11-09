@@ -4,6 +4,30 @@
 
 ### Added
 
+- `clustafari.job` ships as package data (`clustafari/job/clustafari.job`):
+  a pip-installed package is self-contained and resolves the job script from
+  the installed distribution. The lazy resolver falls back to the repository
+  checkout copy and then to an executable `clustafari.job` on `PATH`
+  (issue #15).
+
+### Changed
+
+- **BREAKING**: `clustafari.paths` no longer exposes import-time constants
+  `CLUSTAFARI_DIR`, `JOB_FILE`, `WORKERSTUB`; use the accessor functions
+  `clustafari_dir()`, `job_file()`, `workerstub()` (plus `reset_path_cache()`
+  for tests) instead (issue #15).
+- Importing `clustafari` performs no filesystem side effects any more:
+  `~/.clustafari` is created on first use, and the job script is resolved
+  lazily at config construction / dispatch time. A missing job script now
+  raises `FileNotFoundError` (naming the searched locations) at first use
+  instead of breaking the import (issue #15).
+- The `[tool.uv.build-backend] data = { scripts = "scripts" }` install step
+  is removed; `scripts/clustafari.job` moved into the package as
+  `src/clustafari/job/clustafari.job` (the dev `scripts/extract_slurm_env.sh`
+  stays) (issue #15).
+
+### Added
+
 - Run handles expose the worker-side progress: `run.status` returns a
   `RunStatus` (`NOT_STARTED`, `PENDING`, `STARTED`, `LOADING`, `RUNNING`,
   `DUMPING`, `FINISHED`, `FAILED`, `CANCELLED`) derived from the run's state

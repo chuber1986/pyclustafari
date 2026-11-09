@@ -36,7 +36,7 @@ The system SHALL convert a collection of resource objects into a mapping of subm
 
 ### Requirement: Backend configs select runner and carry resources
 
-The system SHALL provide one configuration class per backend that selects that backend's runner, and the cluster backend config SHALL accept positional resource objects, converting them to submission key-value pairs.
+The system SHALL provide one configuration class per backend that selects that backend's runner, and the cluster backend config SHALL accept positional resource objects, converting them to submission key-value pairs. Config default parameters for the job script and worker stub SHALL be resolved lazily at construction time per the install-layout capability (never at import), so constructing a config works in an installed package with no checkout and no `PATH` copy of the job script.
 
 #### Scenario: cluster config from resources
 
@@ -47,6 +47,11 @@ The system SHALL provide one configuration class per backend that selects that b
 
 - **WHEN** an in-process or subprocess backend config is constructed
 - **THEN** it carries no resources and uses no job file (empty job-file path)
+
+#### Scenario: lazy default paths at construction
+
+- **WHEN** a config is constructed without explicit job-file or worker-stub arguments in an installed package with no repo checkout and no job script on `PATH`
+- **THEN** construction succeeds and resolves the packaged copies
 
 ### Requirement: Resource attribute access on config
 
@@ -73,7 +78,7 @@ The system SHALL ship named resource presets as packaged YAML, expose lookup by 
 #### Scenario: lazy preset load
 
 - **WHEN** a preset is first accessed by name or class attribute
-- **THEN** the packaged YAML is located, and on first use copied into the user's `~/.clustafari/` directory if absent, then parsed and cached; the user-editable copy is the one loaded
+- **THEN** the packaged YAML is located, and on first use copied into the user's `~/.clustafari/` directory (created on demand) if absent, then parsed and cached; the user-editable copy is the one loaded
 
 #### Scenario: missing file yields empty defaults
 

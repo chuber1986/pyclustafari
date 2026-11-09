@@ -11,8 +11,8 @@ from typing import Any
 
 import joblib
 
+from clustafari import paths
 from clustafari.exceptions import CancelledError, RunnableStateError, StateError, TimeoutException
-from clustafari.paths import CLUSTAFARI_DIR
 from clustafari.utils import (
     State,
     get_error_file,
@@ -168,7 +168,7 @@ class Runnable:
         try:
             function_data = (self.function, self.args, self.kwargs)
 
-            self.tempdir = CLUSTAFARI_DIR / f"{self._get_hash()}"
+            self.tempdir = paths.clustafari_dir() / f"{self._get_hash()}"
             self.tempdir.mkdir(exist_ok=True)
 
             self.tempfile = self.tempdir / f"{_get_function_name(self.function)}.joblib"
