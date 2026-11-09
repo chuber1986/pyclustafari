@@ -121,6 +121,10 @@ with ClusterContext(SlurmConfig()) as ctx:
 ...
 res = run.get(blocking=True)
 plot_results(*res)
+# Check the progress of an asynchronous run (worker state file):
+# pending -> started -> loading -> running -> dumping -> finished/failed
+print(run)  # e.g. "function('param1') [running, job 12345]"
+run.status  # RunStatus enum: NOT_STARTED ... FINISHED/FAILED/CANCELLED
 # Cancel a run you no longer need (e.g. wrong parameters)
 from clustafari.exceptions import CancelledError
 

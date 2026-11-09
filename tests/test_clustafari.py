@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Tests for `pyclustafari` package."""
+
 import os
 import time
 
@@ -128,9 +129,7 @@ def test_slurm_runner(fn, args, kwargs):
 
 @pytest.mark.skipif(condition=os.system("srun -V") != 0, reason="slurm not available")
 def test_slurm_runner_config():
-    with ClusterContext(
-        SlurmConfig(MemoryPerNodeResource(value="1G"), CPUPerTaskResource(value=1))
-    ) as ctx:
+    with ClusterContext(SlurmConfig(MemoryPerNodeResource(value="1G"), CPUPerTaskResource(value=1))) as ctx:
         assert ctx.apply(fn0) == 1
 
 
@@ -141,9 +140,7 @@ def test_slurm_runner_killed_worker_reports_failure():
     # A 10 MB memory limit cannot run the Python interpreter, so Slurm OOM-kills
     # the worker before it can write its state file. `get` must then report the
     # failure instead of waiting for a state file that will never appear.
-    with ClusterContext(
-        SlurmConfig(MemoryPerNodeResource(value="10"), CPUPerTaskResource(value=1))
-    ) as ctx:
+    with ClusterContext(SlurmConfig(MemoryPerNodeResource(value="10"), CPUPerTaskResource(value=1))) as ctx:
         run = ctx.apply_async(fn0)
         with pytest.raises(StateError, match="terminated"):
             run.get(blocking=True, timeout=60)
@@ -321,3 +318,50 @@ def test_unpicklable_argument_fails_run_slurm():
         assert run.state == RunState.FAILED
         with pytest.raises(StateError, match="pickle"):
             run.get(blocking=True)
+
+
+def test_subprocess_runner_status_reports_progress():
+    """A live subprocess run is RUNNING mid-flight and FINISHED after get()."""
+    from clustafari.runner.state import RunStatus
+
+    with ClusterContext(SubprocessConfig()) as ctx:
+        run = ctx.apply_async(slow, 2)
+
+        # Poll until the worker reported RUNNING (worker startup takes a
+        # moment; 30 s is generous for interpreter start + joblib load).
+        deadline = time.monotonic() + 30
+        statuses = []
+        while time.monotonic() < deadline and run.status != RunStatus.RUNNING:
+            statuses.append(run.status)
+            time.sleep(0.05)
+        assert run.status == RunStatus.RUNNING
+
+        assert run.get(blocking=True, timeout=30) == 3
+        assert run.status == RunStatus.FINISHED
+
+
+def test_subprocess_runner_status_pending_before_worker_starts():
+    from clustafari.runner.state import RunStatus
+
+    with ClusterContext(SubprocessConfig()) as ctx:
+        run = ctx.apply_async(slow, 30)
+        # Dispatched (READY) but the worker has not reported yet.
+        assert run.state == RunState.READY
+        assert run.status in (RunStatus.PENDING, RunStatus.STARTED, RunStatus.RUNNING)
+        run.cancel()
+        assert run.status == RunStatus.CANCELLED
+
+
+@pytest.mark.skipif(condition=os.system("srun -V") != 0, reason="slurm not available")
+def test_slurm_runner_str_contains_jobid():
+    from clustafari.runner.state import RunStatus
+
+    with ClusterContext(SlurmConfig()) as ctx:
+        run = ctx.apply_async(fn1, 1)
+        text = str(run)
+        assert str(run.info.jobid) in text
+        assert "job" in text
+        # The status vocabulary is exposed on the handle as well.
+        assert isinstance(run.status, RunStatus)
+        run.cancel()
+        assert run.status == RunStatus.CANCELLED

@@ -23,7 +23,7 @@ from clustafari.utils import (
 )
 
 from .info import RunInformation
-from .state import RunState
+from .state import _STATUS_BY_WORKER_STATE, RunState, RunStatus
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +80,28 @@ class Runnable:
     def state(self) -> RunState:
         """Return the current execution state."""
         return self._state
+
+    @property
+    def status(self) -> RunStatus:
+        """Return the run's progress as a caller-facing status.
+
+        Combines the caller-side state machine with the worker's reported
+        progress (the state file): terminal caller states win, a run that
+        was never dispatched is `NOT_STARTED`, and a dispatched run whose
+        backing worker process or cluster job is observed dead without a
+        terminal state-file report is `FAILED`.
+        """
+        if self._state == RunState.INITIALIZED:
+            return RunStatus.NOT_STARTED
+        if self._state in (RunState.FINISHED, RunState.FAILED, RunState.CANCELLED):
+            return RunStatus(self._state.value)
+
+        worker_state = self._read_state_file()
+        if worker_state not in (State.IDLE, State.FINISHED, State.FAILED) and self._info.terminated():
+            # The worker died before writing its terminal state: no further
+            # progress will ever be reported and `get()` will fail this run.
+            return RunStatus.FAILED
+        return _STATUS_BY_WORKER_STATE[worker_state]
 
     @property
     def result(self) -> Any:
@@ -345,3 +367,9 @@ class Runnable:
         astr = ", ".join(a)
         kwastr = ", ".join(kwa)
         return f"{fn_name}({astr}, {kwastr})"
+
+    def __str__(self) -> str:
+        """Return the run description with its current status (and job ID)."""
+        jobid = getattr(self._info, "jobid", None)
+        job = f", job {jobid}" if jobid is not None else ""
+        return f"{self!r} [{self.status.value}{job}]"

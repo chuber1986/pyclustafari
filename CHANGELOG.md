@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+- Run handles expose the worker-side progress: `run.status` returns a
+  `RunStatus` (`NOT_STARTED`, `PENDING`, `STARTED`, `LOADING`, `RUNNING`,
+  `DUMPING`, `FINISHED`, `FAILED`, `CANCELLED`) derived from the run's state
+  file (issue #11). `str(run)` includes the current status and — for a
+  Slurm-backed run — the job ID (`"fn1(1) [running, job 12345]"`), so
+  `squeue`/`scancel` copy-paste works; `repr(run)` is unchanged.
+
 ### Fixed
 
 - An empty (freshly touched) worker state file no longer spams the log with
