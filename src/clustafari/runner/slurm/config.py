@@ -3,7 +3,6 @@
 from pathlib import Path
 
 from clustafari.config import NodeConfig
-from clustafari.paths import JOB_FILE, WORKERSTUB
 from clustafari.resources.resources import Resource, Resources
 
 
@@ -14,8 +13,8 @@ class _SlurmConfig(NodeConfig):
         self,
         *resources: Resource,
         runner_cls: type,
-        jobfile: Path | str = JOB_FILE,
-        workerstub: Path | str = WORKERSTUB,
+        jobfile: Path | str | None = None,
+        workerstub: Path | str | None = None,
     ) -> None:
         res = Resources(resources=resources)
         super().__init__(

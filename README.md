@@ -96,6 +96,8 @@ Install as package (optional):
 $ python -m pip install .
 ```
 
+The job script ships as package data (`clustafari/job/clustafari.job`) and is
+resolved automatically at runtime — no separate `PATH` installation needed.
 Adding the project directory to the PYTHONPATH works as well.
 
 ## Usage

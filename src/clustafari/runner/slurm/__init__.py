@@ -4,8 +4,8 @@ import logging
 from importlib.resources import files
 from typing import Any
 
+from clustafari import paths
 from clustafari.config import NodeConfig
-from clustafari.paths import CLUSTAFARI_DIR
 from clustafari.resources import (
     CPUPerGPUResource,
     CPUPerTaskResource,
@@ -36,7 +36,7 @@ defaults = {}
 
 def _load_default_configurations():
     default_fname = "slurm_defaults.yaml"
-    file = CLUSTAFARI_DIR / default_fname
+    file = paths.clustafari_dir() / default_fname
     if not file.exists():
         logger.warning("No default configuration found at '%s'", str(file))
         logger.warning("Restore defaults from project defaults.")

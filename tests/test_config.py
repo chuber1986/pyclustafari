@@ -77,16 +77,18 @@ def test_slurm_config_create_config_empty():
 
 def test_slurm_config_load_named_defaults(tmp_path, monkeypatch):
     import clustafari.runner.slurm as slurm_mod
+    from clustafari import paths
 
     # Point the loader at an isolated directory and reset the global cache so
     # the package defaults get (re)created there.
-    monkeypatch.setattr(slurm_mod, "CLUSTAFARI_DIR", tmp_path)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    paths.reset_path_cache()
     monkeypatch.setattr(slurm_mod, "defaults", {})
 
     cfg = SlurmConfig.get_config("CFG_CPU4_MEM8G")
     assert isinstance(cfg, SlurmConfig)
     assert cfg.resources == {"memory_per_node": "8G", "cpus_per_task": "4"}
-    assert (tmp_path / "slurm_defaults.yaml").exists()
+    assert (tmp_path / ".clustafari" / "slurm_defaults.yaml").exists()
 
     # Reset the shared cache between calls so each accessor runs its own
     # lazy-load path (and subsequent calls hit the warm cache).
@@ -99,6 +101,8 @@ def test_slurm_config_load_named_defaults(tmp_path, monkeypatch):
     names = SlurmConfig.get_config_names()
     assert set(names) == set(configs)
     assert SlurmConfig.get_config_names() == names  # warm cache hit
+
+    paths.reset_path_cache()
 
 
 def test_delayed_returns_partial_with_captured_args():

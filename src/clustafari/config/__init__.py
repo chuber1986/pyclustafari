@@ -6,7 +6,7 @@ from typing import Any
 
 import yaml
 
-from clustafari.paths import JOB_FILE, WORKERSTUB
+from clustafari import paths
 from clustafari.resources import Resource
 from clustafari.runner import BaseRunner
 
@@ -45,12 +45,17 @@ class NodeConfig:
         self,
         runner: BaseRunner,
         resources: dict | None = None,
-        jobfile: Path | str = JOB_FILE,
-        workerstub: Path | str = WORKERSTUB,
+        jobfile: Path | str | None = None,
+        workerstub: Path | str | None = None,
     ) -> None:
-        """Initialize NodeConfig with runner, resources, jobfile and workerstub."""
-        self.job_file = jobfile
-        self.workerstub = workerstub
+        """Initialize NodeConfig with runner, resources, jobfile and workerstub.
+
+        Path arguments default to lazily resolved locations (packaged job
+        script / worker stub); resolution happens here, at construction,
+        never at import.
+        """
+        self.job_file = jobfile if jobfile is not None else paths.job_file()
+        self.workerstub = workerstub if workerstub is not None else paths.workerstub()
         self.runner = runner
         self.resources: dict[str, Resource] = resources or {}
 
