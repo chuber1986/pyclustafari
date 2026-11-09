@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import override
 
-from clustafari.runner import BaseRunner, RunInformation, Runnable
+from clustafari.runner import BaseRunner, Runnable
 from clustafari.runner.state import RunState
 from clustafari.utils import get_error_file, get_output_file
 
@@ -25,14 +25,13 @@ class SlurmRunner(BaseRunner):
         """Initialize Slurm Runner with configuration."""
         super().__init__()
         self.config = config
-        self.job_id: int | None = None
 
     @override
-    def _run(self, runobj: Runnable) -> RunInformation:
+    def _run(self, runobj: Runnable) -> None:
         logger.info("Execute Runner '%s'", self.__class__.__name__)
         runobj.execute()
         if runobj.state == RunState.FAILED:
-            return RunInformation()
+            return
 
         file = runobj.tempfile
         assert file is not None, "execute() must have created the job file."
@@ -61,7 +60,6 @@ class SlurmRunner(BaseRunner):
             jobid = desc.submit()
         except Exception as e:  # noqa: BLE001
             runobj.fail(str(e))
-            return RunInformation()
+            return
 
         runobj.info = SlurmInformation(jobid)
-        return runobj.info

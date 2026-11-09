@@ -100,6 +100,11 @@ def test_slurm_submit_failure_fails_run(monkeypatch):
         assert run.tempdir is None or not run.tempdir.exists()
 
 
+def test_slurm_runner_has_no_job_id_attribute():
+    """The runner is shared per-config; per-job state lives on SlurmInformation only."""
+    assert not hasattr(SlurmRunner(SlurmConfig()), "job_id")
+
+
 def test_subprocess_runner_popen_failure_fails_run(monkeypatch):
     import clustafari.runner.subprocess.runner as runner_mod
 
