@@ -78,6 +78,33 @@ def test_runnable_get_hash_changes_with_timestamp():
     assert r._get_hash() != h1
 
 
+def test_get_hash_returns_str():
+    assert isinstance(Runnable(fn1, 1)._get_hash(), str)
+
+
+def test_read_state_file_empty_content_returns_idle_without_warning(caplog):
+    """A freshly touched (empty) .state file maps to IDLE silently.
+
+    The workerstub creates the file up front; before the fix the empty
+    string missed the State enum and logged a warning on every 0.1 s poll.
+    """
+    r = Runnable(fn1, 1)
+    r.execute()
+    assert r.statefile is not None
+    r.statefile.write_text("")
+    with caplog.at_level("WARNING"):
+        assert r._read_state_file() == State.IDLE
+    assert "Unknown state" not in caplog.text
+
+
+def test_read_state_file_valid_content_still_parses():
+    r = Runnable(fn1, 1)
+    r.execute()
+    assert r.statefile is not None
+    r.statefile.write_text(str(State.RUNNING))
+    assert r._read_state_file() == State.RUNNING
+
+
 def test_read_result_files_handles_corrupt_result_file(tmp_path):
     """A corrupt/missing .res file yields a (None, None) result, not an exception."""
     r = Runnable(fn1, 1)
