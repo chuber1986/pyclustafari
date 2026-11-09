@@ -74,7 +74,7 @@ class Runnable:
         self.logfile: Path | None = None
         self.statefile: Path | None = None
 
-        logger.info("Create Runnable: %s", repr(self))
+        logger.info("Create Runnable: %s", self.get_function_name())
 
     @property
     def state(self) -> RunState:
@@ -121,12 +121,12 @@ class Runnable:
             except Exception:  # noqa: BLE001
                 logger.warning(
                     "Cancellation of run '%s' failed to stop the backing execution.",
-                    repr(self),
+                    self.get_function_name(),
                     exc_info=True,
                 )
 
         self._state = RunState.CANCELLED
-        logger.info("Cancel Runnable: %s", repr(self))
+        logger.info("Cancel Runnable: %s", self.get_function_name())
 
     @property
     def info(self) -> Any:
@@ -158,7 +158,7 @@ class Runnable:
 
             logger.debug(
                 "Dump serialized Runnable '%s' to file '%s'",
-                repr(self),
+                self.get_function_name(),
                 str(self.tempfile),
             )
             joblib.dump(function_data, self.tempfile)
@@ -168,10 +168,10 @@ class Runnable:
             # serialization) is not a job failure. Mark the run as failed so
             # callers report it through `get()` instead of leaking a raw
             # exception (e.g. `PicklingError`) out of `apply_async`.
-            logger.debug("Prepare Runnable '%s' failed", repr(self), exc_info=True)
+            logger.debug("Prepare Runnable '%s' failed", self.get_function_name(), exc_info=True)
             self.fail(str(err))
 
-    def _get_hash(self) -> str | None:
+    def _get_hash(self) -> str:
         return joblib.hash((self.function, self.args, self.kwargs, self._timestamp))
 
     def is_finished(self) -> bool:
@@ -225,6 +225,11 @@ class Runnable:
         with self.statefile.open("r") as f:
             content = f.read().strip()
 
+        if not content:
+            # A freshly touched (still empty) state file must not go through
+            # State(content): the miss would log a warning on every poll
+            # until the worker writes the first real state.
+            return State.IDLE
         return State(content.lower())
 
     def _read_job_file(self, file: Path | None) -> tuple[Any, Any]:
