@@ -26,7 +26,7 @@ If `uv sync` cannot build PySlurm in your environment:
 1. Create the environment without it:
 
    ```console
-   $ uv env
+   $ uv venv
    $ uv pip install pip
    ```
 
