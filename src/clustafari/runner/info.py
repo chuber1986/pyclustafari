@@ -4,6 +4,10 @@
 class RunInformation:
     """Information about an executed run."""
 
+    #: Identifier of the backing cluster job, when the backend submitted one
+    #: (set by e.g. `SlurmInformation`); `None` for local backends.
+    jobid: int | None = None
+
     def __init__(self) -> None:
         """Initialize RunInformation with default values."""
         self.output: str = ""
