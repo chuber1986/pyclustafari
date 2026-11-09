@@ -59,7 +59,7 @@ $ git clone --recurse-submodules https://github.com/chuber1986/pyclustafari
 $ cd pyclustafari
 ```
 
-It's recommended to use the SSH link, starting with "git://" instead of the HTTPS link starting with "https://".
+It's recommended to use the SSH link (`git@github.com:...`) instead of the HTTPS link starting with "https://".
 
 Create environment:
 
@@ -67,7 +67,7 @@ Create environment:
 $ uv sync
 ```
 
-`uv sync` builds PySlurm from the vendored submodule `third-party/pyslurm` against the local Slurm headers/libraries. To support a new Slurm version, checkout the matching PySlurm branch (see `third-party/pyslurm`) in the submodule, run `uv lock`, and commit the updated submodule pointer. If 'pyslurm' can't be built this way, use 'uv env && uv pip install pip' to create an empty environment. Manually install 'pyslurm' with the version matching the Slurm version of your cluster. Afterwards, rerun 'uv sync'.
+`uv sync` builds PySlurm from the vendored submodule `third-party/pyslurm` against the local Slurm headers/libraries. To support a new Slurm version, checkout the matching PySlurm branch (see `third-party/pyslurm`) in the submodule, run `uv lock`, and commit the updated submodule pointer. If 'pyslurm' can't be built this way, use 'uv venv' to create an empty environment and 'uv pip install pip' to bootstrap pip in it. Manually install 'pyslurm' with the version matching the Slurm version of your cluster. Afterwards, rerun 'uv sync'.
 
 ### prek usage explicit (for devs only)
 
