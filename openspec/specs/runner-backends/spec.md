@@ -27,7 +27,7 @@ The system SHALL execute dispatched functions in the caller's own process, captu
 
 ### Requirement: Subprocess backend spawns a detached local worker
 
-The system SHALL execute dispatched functions in a fresh local Python process running the packaged worker stub, constructing the process with the caller's Python interpreter and a worker command, prepending the caller's working directory to the child's `PYTHONPATH`, and proceeding without waiting for the child. The spawned process handle SHALL be kept on the run's information object so worker death can be observed.
+The system SHALL execute dispatched functions in a fresh local Python process running the packaged worker stub, constructing the process with the caller's Python interpreter and a worker command, prepending the caller's working directory to the child's `PYTHONPATH`, and proceeding without waiting for the child. The spawned process handle SHALL be kept on the run's information object so worker death can be observed. The backend dispatch entry SHALL be a fire-and-forget operation returning `None` in every outcome (successful handoff, preparation failure, handoff failure); the run's information object SHALL be the sole carrier of execution state.
 
 #### Scenario: spawn proceeds without waiting
 
@@ -65,7 +65,7 @@ The system SHALL expose a `cancel()` operation on every run's information object
 
 ### Requirement: Cluster backend submits via pyslurm
 
-The system SHALL execute dispatched functions by building a submission description whose name is the function's qualified name, pointing stdout/stderr at the run's output files, launching the packaged job script with the worker command and the caller's interpreter path, injecting the caller's working directory into `PYTHONPATH`, and passing the configured resources as submission parameters. The submission interface SHALL be imported lazily at dispatch time.
+The system SHALL execute dispatched functions by building a submission description whose name is the function's qualified name, pointing stdout/stderr at the run's output files, launching the packaged job script with the worker command and the caller's interpreter path, injecting the caller's working directory into `PYTHONPATH`, and passing the configured resources as submission parameters. The submission interface SHALL be imported lazily at dispatch time. The backend runner instance SHALL NOT carry per-job state: it is shared across all runs of one configuration, and the submitted job's ID SHALL be kept only on the run's information object.
 
 #### Scenario: successful submission
 
@@ -75,7 +75,12 @@ The system SHALL execute dispatched functions by building a submission descripti
 #### Scenario: submission failure fails the run
 
 - **WHEN** the submission call raises any exception
-- **THEN** the run transitions to failed with that exception's message
+- **THEN** the run transitions to failed with that exception's message, and the backend's dispatch entry returns without exposing a job ID
+
+#### Scenario: no per-job state on the runner
+
+- **WHEN** the cluster backend runner is inspected after dispatching runs
+- **THEN** it exposes no job-ID attribute; the submitted job ID is retrievable only from each run's information object
 
 #### Scenario: interpreter selection
 
