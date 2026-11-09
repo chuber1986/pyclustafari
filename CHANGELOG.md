@@ -13,6 +13,14 @@
 
 ### Fixed
 
+- The worker publishes its artifacts atomically: the state file, the result
+  dump, and the log are written to a temporary file in the artifact directory
+  and renamed onto their final path (`os.replace`), so a reader on a shared
+  filesystem (NFS) can no longer observe a torn write of a run that actually
+  succeeded and demote it to FAILED (issue #14).
+- `Runnable._read_job_file()` now logs a warning when the corrupt-result
+  safety net triggers, making any residual success-to-failure demotion
+  visible instead of silent (issue #14).
 - An empty (freshly touched) worker state file no longer spams the log with
   `Unknown state '' ... defaulting to IDLE` warnings on every poll
   (~10x/s until the worker writes `STARTED`);

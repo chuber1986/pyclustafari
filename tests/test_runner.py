@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Tests for `clustafari.runner` internals (Runnable, state machine, helpers)."""
 
+import logging
 import pickle
 from functools import partial
 
@@ -105,7 +106,7 @@ def test_read_state_file_valid_content_still_parses():
     assert r._read_state_file() == State.RUNNING
 
 
-def test_read_result_files_handles_corrupt_result_file(tmp_path):
+def test_read_result_files_handles_corrupt_result_file(tmp_path, caplog):
     """A corrupt/missing .res file yields a (None, None) result, not an exception."""
     r = Runnable(fn1, 1)
     r.execute()
@@ -126,9 +127,13 @@ def test_read_result_files_handles_corrupt_result_file(tmp_path):
     r.resultfile.write_bytes(data[: len(data) // 2])
     r.statefile.write_text(str(State.FAILED))
 
-    r._read_result_files()
+    with caplog.at_level(logging.WARNING, logger="clustafari.runner.runnable"):
+        r._read_result_files()
     assert r._result is None
     assert r._object is None
+    # The safety net is visible: the success->failure demotion is logged.
+    assert "unreadable" in caplog.text
+    assert str(r.resultfile) in caplog.text
     # State file missing -> run reported as failed.
     assert r.state == RunState.FAILED
 
