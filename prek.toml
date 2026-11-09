@@ -148,7 +148,7 @@ repo = "local"
   [[repos.hooks]]
   id = "pytest"
   name = "pytest"
-  entry = "uv run pytest -v"
+  entry = "uv run pytest -v --cov=clustafari --cov-report=term-missing"
   language = "system"
   pass_filenames = false
   priority = 10
