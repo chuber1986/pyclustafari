@@ -20,3 +20,8 @@ The system SHALL execute dispatched functions in a fresh local Python process ru
 
 - **WHEN** the spawned worker process exits before the run's state file reports a terminal state
 - **THEN** the run is reported as terminated, and retrieval fails the run with the worker's stderr output and the process exit code instead of waiting forever
+
+#### Scenario: cancel terminates and reaps the worker
+
+- **WHEN** a run on the subprocess backend is cancelled while its worker process is alive
+- **THEN** the worker is asked to terminate, is killed if it does not exit within a short grace period, and is reaped; retrieval from the cancelled run raises the cancellation error, not a worker-death failure
