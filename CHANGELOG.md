@@ -4,6 +4,19 @@
 
 ### Fixed
 
+- An empty (freshly touched) worker state file no longer spams the log with
+  `Unknown state '' ... defaulting to IDLE` warnings on every poll
+  (~10x/s until the worker writes `STARTED`);
+  `Runnable._read_state_file()` maps empty content to `State.IDLE` directly
+  (issue #10).
+- `SlurmRunner` no longer declares a never-populated `job_id` attribute; the
+  submitted Slurm job ID lives only on `SlurmInformation.jobid` (issue #10).
+- Logging no longer stringifies large job payloads for disabled log levels:
+  `Runnable` and `BaseRunner.apply_async` log the function name instead of
+  eagerly formatting the full `repr(runobj)` (issue #10).
+- README/docs: the obsolete `git://` clone protocol advice is replaced with
+  SSH cloning, and the invalid `uv env` command is corrected to `uv venv`
+  (issue #10).
 - `Runnable.get()` no longer leaves the run's `~/.clustafari/<hash>` tempdir
   behind when the execution failed: the artifacts are now deleted as soon as
   `get()` reports the failure (previously they were only removed on success or
@@ -30,6 +43,13 @@
 
 ### Changed
 
+- `BaseRunner._run()` now returns `None`; the previously built-and-discarded
+  `RunInformation` return values were dead code (issue #10).
+- `Runnable._get_hash()` return type narrowed from `str | None` to `str`
+  (`joblib.hash` always returns a string) (issue #10).
+- Removed the deprecated and unused `pytest-runner` dev dependency; the prek
+  pytest gate now runs with `--cov=clustafari --cov-report=term-missing` so
+  the installed `pytest_cov` is actually used (issue #10).
 - Switched the local/CI code-quality gate from pre-commit to
   [prek](https://github.com/j178/prek) with a native `prek.toml`; `.pre-commit-config.yaml`
   is removed. The gate covers repository-integrity checks, conventional-commit
