@@ -9,6 +9,7 @@ from clustafari import workerstub as _workerstub_module
 
 _STATE_DIR_NAME = ".clustafari"
 _JOB_FILE_NAME = "clustafari.job"
+_ARTIFACT_DIR_ENV_VAR = "CLUSTAFARI_ARTIFACT_DIR"
 
 #: Repo-checkout candidate (dev fallback): <repo>/scripts/clustafari.job.
 _CHECKOUT_JOB_FILE = Path(__file__).parents[2] / "scripts" / _JOB_FILE_NAME
@@ -35,6 +36,39 @@ def clustafari_dir() -> Path:
     d = Path.home() / _STATE_DIR_NAME
     d.mkdir(parents=True, exist_ok=True)
     _CACHE["clustafari_dir"] = d
+    return d
+
+
+def artifacts_root(root: Path | str | None = None) -> Path:
+    """Return the artifacts root, creating it on first use.
+
+    Resolution precedence (highest first): the explicit ``root`` argument,
+    the ``CLUSTAFARI_ARTIFACT_DIR`` environment variable (read at call
+    time), then the user state directory ``~/.clustafari``.
+
+    Args:
+        root: Explicit artifacts root overriding the environment variable
+            and the default. ``~`` is expanded. The explicit resolution is
+            never cached; global (env-var/default) resolutions are cached
+            until :func:`reset_path_cache`.
+
+    Returns:
+        The resolved artifacts root as a ``Path``.
+
+    """
+    if root is None:
+        if (d := _CACHE.get("artifacts_root")) is not None:
+            return d
+        if env_dir := os.environ.get(_ARTIFACT_DIR_ENV_VAR):
+            d = Path(env_dir).expanduser()
+        else:
+            d = Path.home() / _STATE_DIR_NAME
+        d.mkdir(parents=True, exist_ok=True)
+        _CACHE["artifacts_root"] = d
+        return d
+
+    d = Path(root).expanduser()
+    d.mkdir(parents=True, exist_ok=True)
     return d
 
 

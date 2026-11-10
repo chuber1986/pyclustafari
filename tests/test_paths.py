@@ -167,3 +167,53 @@ def test_reset_path_cache_clears_all(tmp_path, monkeypatch):
     assert paths._CACHE  # populated
     paths.reset_path_cache()
     assert paths._CACHE == {}
+
+
+def test_artifacts_root_env_var(tmp_path, monkeypatch):
+    root = tmp_path / "scratch"
+    monkeypatch.setenv("CLUSTAFARI_ARTIFACT_DIR", str(root))
+    monkeypatch.setenv("HOME", str(tmp_path))
+    assert paths.artifacts_root() == root
+    assert root.is_dir()  # created on first use
+
+
+def test_artifacts_root_default_is_state_dir(tmp_path, monkeypatch):
+    monkeypatch.delenv("CLUSTAFARI_ARTIFACT_DIR", raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    assert paths.artifacts_root() == tmp_path / ".clustafari"
+    assert (tmp_path / ".clustafari").is_dir()
+
+
+def test_artifacts_root_explicit_argument(tmp_path, monkeypatch):
+    monkeypatch.setenv("CLUSTAFARI_ARTIFACT_DIR", str(tmp_path / "from-env"))
+    monkeypatch.setenv("HOME", str(tmp_path))
+    explicit = tmp_path / "explicit"
+    assert paths.artifacts_root(explicit) == explicit
+    assert explicit.is_dir()
+    # The explicit resolution is not cached into the global default.
+    assert paths.artifacts_root() == tmp_path / "from-env"
+
+
+def test_artifacts_root_expands_user(monkeypatch, tmp_path):
+    monkeypatch.delenv("CLUSTAFARI_ARTIFACT_DIR", raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    assert paths.artifacts_root("~/clustafari-scratch") == tmp_path / "clustafari-scratch"
+
+
+def test_artifacts_root_env_var_read_lazily_and_cache_reset(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("CLUSTAFARI_ARTIFACT_DIR", str(tmp_path / "first"))
+    assert paths.artifacts_root() == tmp_path / "first"
+
+    # Cached: changing the env mid-session has no effect until reset.
+    monkeypatch.setenv("CLUSTAFARI_ARTIFACT_DIR", str(tmp_path / "second"))
+    assert paths.artifacts_root() == tmp_path / "first"
+    paths.reset_path_cache()
+    assert paths.artifacts_root() == tmp_path / "second"
+
+
+def test_artifacts_root_env_var_beats_state_dir_but_not_argument(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("CLUSTAFARI_ARTIFACT_DIR", str(tmp_path / "env"))
+    assert paths.artifacts_root() == tmp_path / "env"
+    assert paths.artifacts_root(tmp_path / "explicit") == tmp_path / "explicit"
