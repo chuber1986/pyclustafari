@@ -6,7 +6,7 @@
 
 ## What Changes
 
-- Replace `Runnable._get_hash()` (`joblib.hash` over the full payload plus timestamp) with a cheap unique run-directory name: `uuid4().hex`, prefixed with the dispatched function's name for debuggability (e.g. `map_async-y7k2…`).
+- Replace `Runnable._get_hash()` (`joblib.hash` over the full payload plus timestamp) with a cheap unique run-directory name: `uuid4().hex`, prefixed with the dispatched function's name for debuggability (e.g. `map_async-3f2b9c…`).
 - Run-directory naming is no longer content-derived; uniqueness is guaranteed by construction instead of by a hash over a monotonic timestamp.
 - Remove the now-unused `_timestamp` attribute and the `joblib` import dependency on the dispatch path (joblib remains in use for job/result serialization).
 - Update the `runnable-artifact-protocol` spec requirement that names the joblib-hash implementation detail; the observable behavior — unique directory per run, even for repeated identical calls — is unchanged.
