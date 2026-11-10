@@ -195,6 +195,44 @@ backend (the worker runs on the caller's machine); the Slurm backend needs a
 directory visible to both caller and worker — use a shared scratch/parallel
 filesystem with absolute paths.
 
+### Recovering orphaned runs and artifact cleanup
+
+If your kernel dies or the session is closed while runs are in flight, the
+`Runnable` handles are lost — but the dispatched work keeps running on the
+cluster and its results remain on disk. Discover and re-attach to those
+runs in a new session:
+
+```python
+import clustafari
+
+# List runs found under the artifacts root (same resolution as dispatch:
+# explicit root argument, else CLUSTAFARI_ARTIFACT_DIR, else ~/.clustafari).
+for run in clustafari.list_runs():
+    print(run.run_id, run.function, run.backend, run.jobid, run.state)
+
+# Rebuild a handle for a run of a previous session and retrieve its result
+# (blocking, with the usual timeout semantics).
+handle = clustafari.attach("myfunc-3f2b9c0d7e64123456789abcdef01234")
+result = handle.get(blocking=True, timeout=600)
+```
+
+A failed run raises on retrieval with the run's captured log and error
+output, so post-mortem diagnosis works without the original session. Runs
+are identified by their artifact directory name; attaching does not
+re-dispatch anything — it only reads what the previous session left behind.
+
+Clean up artifact directories of terminal runs by age:
+
+```python
+result = clustafari.gc(max_age=7 * 24 * 3600)  # keep one week of artifacts
+print(result.removed, "removed,", result.remaining, "remaining")
+```
+
+`gc` only removes runs that are terminal (the worker reported
+finished/failed, or the cluster job is no longer active) and older than
+`max_age`; live runs are never touched. With `max_age=0` every terminal-run
+directory is removed — useful after a crash.
+
 For more detail see [DemoNotebook](./notebooks/demo.ipynb)
 
 ## Contact

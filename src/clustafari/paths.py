@@ -72,6 +72,29 @@ def artifacts_root(root: Path | str | None = None) -> Path:
     return d
 
 
+def artifacts_root_resolve_only(root: Path | str | None = None) -> Path:
+    """Return the artifacts root without creating it.
+
+    Same precedence chain as :func:`artifacts_root` (explicit argument, else
+    ``CLUSTAFARI_ARTIFACT_DIR``, else ``~/.clustafari``), but never creates
+    the directory — for read-only consumers such as run discovery, which
+    must not materialize a root just by looking at it. The global
+    (env-var/default) resolution is cached like the creating accessor and
+    honors :func:`reset_path_cache`; explicit arguments are never cached.
+    """
+    if root is None:
+        if (d := _CACHE.get("artifacts_root")) is not None:
+            return d
+        if env_dir := os.environ.get(_ARTIFACT_DIR_ENV_VAR):
+            d = Path(env_dir).expanduser()
+        else:
+            d = Path.home() / _STATE_DIR_NAME
+        _CACHE["artifacts_root"] = d
+        return d
+
+    return Path(root).expanduser()
+
+
 def _packaged_job_file() -> importlib.resources.abc.Traversable | None:
     """Return the packaged job-script resource if it exists, else None."""
     resource = importlib.resources.files("clustafari") / "job" / _JOB_FILE_NAME

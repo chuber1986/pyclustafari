@@ -1,12 +1,14 @@
 """Utility functions for PyClustafari."""
 
+import contextlib
+import json
 import logging
 import sys
 from collections.abc import Generator
 from contextlib import contextmanager
 from enum import StrEnum, auto
 from pathlib import Path
-from typing import TextIO
+from typing import Any, TextIO
 
 logger = logging.getLogger(__name__)
 
@@ -72,3 +74,46 @@ def get_log_file(file: Path) -> Path:
 def get_state_file(file: Path) -> Path:
     """Return path to state file for a given job file."""
     return file.with_suffix(".state")
+
+
+def get_meta_file(file: Path) -> Path:
+    """Return path to the dispatch-time metadata file for a given job file."""
+    return file.parent / "meta.json"
+
+
+_META_TMP_SUFFIX = ".meta-tmp"
+
+
+def read_meta(file: Path) -> dict[str, Any]:
+    """Read the run metadata for a given job file, tolerantly.
+
+    Returns the parsed ``meta.json`` content, or an empty dict when the
+    file is absent, unreadable, or corrupt — metadata is advisory for the
+    run itself and must never break dispatch or retrieval.
+    """
+    meta_file = get_meta_file(file)
+    try:
+        with meta_file.open("r") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def write_meta(file: Path, meta: dict[str, Any]) -> None:
+    """Write the run metadata for a given job file, atomically and best-effort.
+
+    Merges ``meta`` into the existing metadata and publishes via a temp-file
+    rename in the same directory. Never raises: an unwritable metadata file
+    must not prevent dispatch (the protocol treats metadata as advisory).
+    """
+    merged = {**read_meta(file), **meta}
+    tmp = get_meta_file(file).with_suffix(_META_TMP_SUFFIX)
+    try:
+        with tmp.open("w") as f:
+            json.dump(merged, f)
+        tmp.replace(get_meta_file(file))
+    except OSError:
+        logger.warning("Could not write run metadata to %s.", get_meta_file(file), exc_info=True)
+        with contextlib.suppress(OSError):
+            tmp.unlink(missing_ok=True)

@@ -6,7 +6,7 @@ from typing import Any, ClassVar, override
 
 from clustafari.runner import RunInformation
 
-__all__ = ["SlurmInformation"]
+__all__ = ["AttachedSlurmInformation", "SlurmInformation"]
 
 
 class SlurmInformation(RunInformation):
@@ -121,3 +121,49 @@ class SlurmInformation(RunInformation):
 
         if err_file is not None:
             err_file.unlink(missing_ok=True)
+
+
+class AttachedSlurmInformation(SlurmInformation):
+    """Slurm information for a run attached from a previous session.
+
+    Two deviations from the dispatch-time original:
+
+    - tolerant construction: the job may no longer be tracked by slurmctld
+      (past the retention window) or pyslurm may be unavailable, in which
+      case the file-based lookups are skipped — cluster-side death detection
+      still works through `terminated()`;
+    - no artifact unlinking: the info object must never delete the run's
+      stdout/stderr files (the original's `__del__` does exactly that),
+      because for an attached run those files may be all that is left to
+      diagnose it. The attached `Runnable` removes the whole directory
+      itself on the terminal paths.
+    """
+
+    def __init__(self, jobid: int) -> None:
+        """Initialize attached Slurm information with the recorded job ID."""
+        self.jobid: int = jobid
+        self._terminated: bool = False
+        self._terminated_checked_at: float | None = None
+        self._cancelled: bool = False
+        self.out_file: Path | None = None
+        self.err_file: Path | None = None
+
+        try:
+            from pyslurm import Job
+        except ImportError:
+            return
+
+        try:
+            job = Job.load(self.jobid)
+        except Exception:  # noqa: BLE001
+            # Job no longer tracked (or a transient controller problem):
+            # `terminated()` re-derives the state per poll and treats
+            # ESLURM_INVALID_JOB_ID as terminated.
+            return
+
+        self.out_file = Path(job.standard_output)
+        self.err_file = Path(job.standard_error)
+
+    def __del__(self) -> None:
+        # Deliberately no unlinking: see class docstring.
+        pass
