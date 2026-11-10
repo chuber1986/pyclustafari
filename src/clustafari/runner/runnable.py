@@ -437,18 +437,25 @@ class Runnable:
         runobj._result = None  # noqa: SLF001
         runobj._object = None  # noqa: SLF001
 
-        runobj.function = None  # type: ignore[assignment]
-        runobj.args: Iterable = ()
-        runobj.kwargs: Mapping = {}
-        runobj.return_object = False
-        runobj.tempdir = run_dir
-        runobj.tempfile = jobfile
-        runobj.resultfile = get_result_file(jobfile)
-        runobj.outputfile = get_output_file(jobfile)
-        runobj.errorfile = get_error_file(jobfile)
-        runobj.logfile = get_log_file(jobfile)
-        runobj.statefile = get_state_file(jobfile)
-        runobj.metafile = get_meta_file(jobfile)
+        # Bypass `__init__` (no pickled function to wrap); write the
+        # instance state through `__dict__` — attribute-annotated writes
+        # (`runobj.args: Iterable = ()`) are invalid on an existing
+        # instance, and `function = None` doesn't type-check against the
+        # declared callable attribute (retrieval never reads it).
+        runobj.__dict__.update(
+            function=None,
+            args=(),
+            kwargs={},
+            return_object=False,
+            tempdir=run_dir,
+            tempfile=jobfile,
+            resultfile=get_result_file(jobfile),
+            outputfile=get_output_file(jobfile),
+            errorfile=get_error_file(jobfile),
+            logfile=get_log_file(jobfile),
+            statefile=get_state_file(jobfile),
+            metafile=get_meta_file(jobfile),
+        )
 
         meta = utils.read_meta(jobfile)
         runobj.backend = str(meta.get("backend", "unknown"))
