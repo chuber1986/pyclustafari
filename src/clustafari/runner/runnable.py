@@ -8,6 +8,7 @@ import time
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import joblib
 
@@ -67,7 +68,6 @@ class Runnable:
         self.return_object = return_object
         self._artifacts_dir = artifacts_dir
 
-        self._timestamp: int = time.monotonic_ns()
         self.tempdir: Path | None = None
         self.tempfile: Path | None = None
         self.resultfile: Path | None = None
@@ -170,7 +170,7 @@ class Runnable:
         try:
             function_data = (self.function, self.args, self.kwargs)
 
-            self.tempdir = paths.artifacts_root(self._artifacts_dir) / f"{self._get_hash()}"
+            self.tempdir = paths.artifacts_root(self._artifacts_dir) / self._run_dir_name()
             self.tempdir.mkdir(exist_ok=True)
 
             self.tempfile = self.tempdir / f"{_get_function_name(self.function)}.joblib"
@@ -195,8 +195,15 @@ class Runnable:
             logger.debug("Prepare Runnable '%s' failed", self.get_function_name(), exc_info=True)
             self.fail(str(err))
 
-    def _get_hash(self) -> str:
-        return joblib.hash((self.function, self.args, self.kwargs, self._timestamp))
+    def _run_dir_name(self) -> str:
+        """Return a unique per-run artifact directory name.
+
+        The dispatched function's name prefix keeps directories identifiable
+        in the shared artifacts root; the uuid4 body guarantees uniqueness by
+        construction, so repeated identical calls still get distinct
+        directories — at none of the cost of hashing the full payload.
+        """
+        return f"{_get_function_name(self.function)}-{uuid4().hex}"
 
     def is_finished(self) -> bool:
         """Return whether the execution is finished."""
