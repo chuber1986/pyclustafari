@@ -72,15 +72,24 @@ def test_runnable_repr_merges_partial_arguments():
     assert "b=5" in repr(r) and "c=7" in repr(r)
 
 
-def test_runnable_get_hash_changes_with_timestamp():
+def test_runnable_run_dir_names_unique_per_call():
+    r1 = Runnable(fn1, 1)
+    r2 = Runnable(fn1, 1)
+    r1.execute()
+    r2.execute()
+    assert r1.tempdir != r2.tempdir
+    assert r1.tempdir.name.startswith("fn1-")
+    assert len(r1.tempdir.name.removeprefix("fn1-")) == 32
+
+
+def test_runnable_dispatch_never_hashes_payload(monkeypatch):
+    def _boom(*args, **kwargs):
+        raise AssertionError("joblib.hash called on the dispatch path")
+
+    monkeypatch.setattr("clustafari.runner.runnable.joblib.hash", _boom)
     r = Runnable(fn1, 1)
-    h1 = r._get_hash()
-    r._timestamp = 123456789
-    assert r._get_hash() != h1
-
-
-def test_get_hash_returns_str():
-    assert isinstance(Runnable(fn1, 1)._get_hash(), str)
+    r.execute()
+    assert r.state == RunState.READY
 
 
 def test_read_state_file_empty_content_returns_idle_without_warning(caplog):
