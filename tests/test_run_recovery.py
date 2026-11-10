@@ -42,10 +42,17 @@ def root(tmp_path, monkeypatch):
     return tmp_path / "scratch"
 
 
-def _dispatch_dummy(ctx) -> Runnable:
+def _dispatch_dummy(ctx) -> tuple[Runnable, Path]:
+    """Dispatch via the dummy backend and return (handle, artifact dir).
+
+    The `Path` narrowing (instead of `run.tempdir`, which is `Path | None`)
+    keeps the type checker happy at the many `/`-joined uses below without
+    littering the tests with asserts.
+    """
     run = ctx.apply_async(fn1, 1)
     assert run.tempfile is not None
-    return run
+    assert run.tempdir is not None
+    return run, run.tempdir
 
 
 # --- metadata file (task 1.1/1.2/1.3) ---
@@ -53,9 +60,9 @@ def _dispatch_dummy(ctx) -> Runnable:
 
 def test_meta_json_written_at_dispatch(root):
     with ClusterContext(DummyConfig(), artifacts_dir=root) as ctx:
-        run = _dispatch_dummy(ctx)
-        assert {p.name for p in run.tempdir.iterdir()} == DUMMY_FILES
-        meta = json.loads((run.tempdir / "meta.json").read_text())
+        run, rundir = _dispatch_dummy(ctx)
+        assert {p.name for p in rundir.iterdir()} == DUMMY_FILES
+        meta = json.loads((rundir / "meta.json").read_text())
         assert meta["function"] == "fn1"
         assert meta["backend"] == "dummy"
         assert meta["dispatched_at"].endswith("+00:00")  # UTC ISO-8601
@@ -65,12 +72,12 @@ def test_meta_json_survives_across_backends(root, monkeypatch):
     from clustafari import SubprocessConfig
 
     with ClusterContext(SubprocessConfig(), artifacts_dir=root) as ctx:
-        run = _dispatch_dummy(ctx)
+        run, rundir = _dispatch_dummy(ctx)
         assert run.get(blocking=True) == 2
         # After a successful get() the run dir is gone; re-dispatch to assert
         # the subprocess backend records its kind before the worker runs.
-        run2 = _dispatch_dummy(ctx)
-        meta = json.loads((run2.tempdir / "meta.json").read_text())
+        run2, rundir2 = _dispatch_dummy(ctx)
+        meta = json.loads((rundir2 / "meta.json").read_text())
         assert meta["backend"] == "subprocess"
         assert run2.get(blocking=True) == 2
 
@@ -78,8 +85,8 @@ def test_meta_json_survives_across_backends(root, monkeypatch):
 def test_meta_json_absent_leaves_run_unaffected(root):
     """Advisory rule: without meta.json dispatch and retrieval work unchanged."""
     with ClusterContext(DummyConfig(), artifacts_dir=root) as ctx:
-        run = _dispatch_dummy(ctx)
-        (run.tempdir / "meta.json").unlink()
+        run, rundir = _dispatch_dummy(ctx)
+        (rundir / "meta.json").unlink()
         # The dummy backend executes inline: the run is already terminal.
         assert run.state == RunState.FINISHED
         run2 = ctx.apply_async(fn1, 41)
@@ -88,22 +95,22 @@ def test_meta_json_absent_leaves_run_unaffected(root):
 
 def test_meta_json_corrupt_leaves_retrieval_unaffected(root):
     with ClusterContext(DummyConfig(), artifacts_dir=root) as ctx:
-        run = _dispatch_dummy(ctx)
-        (run.tempdir / "meta.json").write_text("{not json")
+        run, rundir = _dispatch_dummy(ctx)
+        (rundir / "meta.json").write_text("{not json")
         # Reconstruction + retrieval (dummy worker never wrote a state file;
         # state file missing reads as IDLE → not finished → get() raises the
         # state error, not a JSON/parse error).
-        attached = Runnable.from_run_dir(run.tempdir)
+        attached = Runnable.from_run_dir(rundir)
         with pytest.raises(Exception, match="not finished"):
             attached.get(blocking=False)
 
 
 def test_meta_write_failure_does_not_break_dispatch(root):
     with ClusterContext(DummyConfig(), artifacts_dir=root) as ctx:
-        run = _dispatch_dummy(ctx)
+        run, rundir = _dispatch_dummy(ctx)
         # Simulate an unwritable meta.json: a directory at that path.
-        (run.tempdir / "meta.json").unlink()
-        (run.tempdir / "meta.json").mkdir()
+        (rundir / "meta.json").unlink()
+        (rundir / "meta.json").mkdir()
         run2 = ctx.apply_async(fn1, 41)
         assert run2.state == RunState.FINISHED
         assert run2.get(blocking=True) == 42
@@ -244,7 +251,9 @@ def test_attached_plain_info_without_jobid(root):
     rundir, _ = _make_artifacts(root, State.RUNNING, backend="subprocess")
     attached = Runnable.from_run_dir(rundir)
     assert isinstance(attached.info, RunInformation)
-    assert not isinstance(attached.info, __import__("clustafari.runner.slurm.info", fromlist=["SlurmInformation"]).SlurmInformation)
+    assert not isinstance(
+        attached.info, __import__("clustafari.runner.slurm.info", fromlist=["SlurmInformation"]).SlurmInformation
+    )
     assert attached.info.terminated() is False
 
 

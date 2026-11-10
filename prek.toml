@@ -106,7 +106,11 @@ rev = "v0.0.11"
   id = "ty-check"
   # Type-check against the project venv so pyslurm (a compiled extension)
   # and the other project dependencies resolve.
-  args = ["--python", ".venv"]
+  # recovery_session_a.py is a test fixture executed as a script (with
+  # tests/ on PYTHONPATH for its `recovery_fn` import); it is never
+  # imported by the package or the test suite, and ty's module search
+  # paths don't include tests/, so the import is a false unresolved-import.
+  args = ["--python", ".venv", "--exclude", "tests/recovery_session_a.py", "--force-exclude"]
   priority = 6
 
 [[repos]]

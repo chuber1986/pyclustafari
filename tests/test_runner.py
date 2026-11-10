@@ -77,6 +77,7 @@ def test_runnable_run_dir_names_unique_per_call():
     r2 = Runnable(fn1, 1)
     r1.execute()
     r2.execute()
+    assert r1.tempdir is not None and r2.tempdir is not None
     assert r1.tempdir != r2.tempdir
     assert r1.tempdir.name.startswith("fn1-")
     assert len(r1.tempdir.name.removeprefix("fn1-")) == 32
