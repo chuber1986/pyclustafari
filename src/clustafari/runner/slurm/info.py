@@ -141,6 +141,9 @@ class AttachedSlurmInformation(SlurmInformation):
 
     def __init__(self, jobid: int) -> None:
         """Initialize attached Slurm information with the recorded job ID."""
+        # Skip `SlurmInformation.__init__` (it requires a dispatch-time job
+        # handle); initialize the `RunInformation` base (output/error/log).
+        super(SlurmInformation, self).__init__()
         self.jobid: int = jobid
         self._terminated: bool = False
         self._terminated_checked_at: float | None = None

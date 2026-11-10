@@ -461,12 +461,18 @@ class Runnable:
         runobj.backend = str(meta.get("backend", "unknown"))
 
         jobid = meta.get("jobid")
-        if jobid is not None:
+        parsed_jobid: int | None = None
+        if jobid is not None and not isinstance(jobid, bool):
+            try:
+                parsed_jobid = int(jobid)
+            except (TypeError, ValueError):
+                parsed_jobid = None
+        if parsed_jobid is not None:
             # Lazy import: `slurm.info` imports `clustafari.config`, which
             # would close an import cycle at module import time.
             from clustafari.runner.slurm.info import AttachedSlurmInformation
 
-            runobj._info = AttachedSlurmInformation(int(jobid))  # noqa: SLF001
+            runobj._info = AttachedSlurmInformation(parsed_jobid)  # noqa: SLF001
 
         runobj._attached = True  # noqa: SLF001
 
@@ -476,14 +482,9 @@ class Runnable:
         info = self.__dict__.pop("_info", None)
         if info is not None and getattr(self, "_attached", False):
             # An attached handle owns nothing: dropping it without `get()`
-            # must not destroy the recovered artifacts. The info object's
-            # `__del__` would unlink the run's stdout/stderr files, and the
-            # GC backstop below would remove the whole directory — both are
-            # meant for directories this session's dispatch created. For
-            # runs attached from a dead session, `gc()` is the explicit
-            # cleanup path instead.
-            info.__dict__.pop("out_file", None)
-            info.__dict__.pop("err_file", None)
+            # must not destroy the recovered artifacts (the info object is
+            # an `AttachedSlurmInformation` whose `__del__` never unlinks;
+            # `gc()` is the explicit cleanup path instead).
             return
         self._delete_temp_files()
 

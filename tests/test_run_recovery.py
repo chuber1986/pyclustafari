@@ -257,6 +257,57 @@ def test_attached_plain_info_without_jobid(root):
     assert attached.info.terminated() is False
 
 
+def _stub_pyslurm_job(monkeypatch, state="FAILED", exit_code=1, exit_code_signal=0):
+    """Stub pyslurm.Job with a terminal, abnormally-exited job."""
+    import pyslurm
+
+    class FakeJob:
+        def __init__(self):
+            self.state = state
+            self.exit_code = exit_code
+            self.exit_code_signal = exit_code_signal
+            self.standard_output = "/tmp/o.out"
+            self.standard_error = "/tmp/e.err"
+
+    class FakeJobNS:
+        @staticmethod
+        def load(job_id):
+            return FakeJob()
+
+    monkeypatch.setattr(pyslurm, "Job", FakeJobNS)
+
+
+def test_attached_slurm_get_raises_diagnostics_when_worker_died(root, monkeypatch):
+    """Attached slurm run whose worker died without a state file: get() must
+    raise a diagnostics-bearing error, not an AttributeError (issue #18)."""
+    _stub_pyslurm_job(monkeypatch, state="OUT_OF_MEMORY", exit_code_signal=9)
+    rundir, jobfile = _make_artifacts(root, State.RUNNING, backend="slurm", jobid=42)
+    get_log_file(jobfile).write_text("the log line\n")
+    jobfile.with_suffix(".err").write_text("the error line\n")
+
+    attached = Runnable.from_run_dir(rundir)
+    assert attached.info.terminated() is True
+
+    with pytest.raises(Exception) as excinfo:
+        attached.get(blocking=True)
+    # Diagnostics-bearing failure (not an AttributeError from the missing
+    # `error`/`log` attributes).
+    assert not isinstance(excinfo.value, AttributeError)
+    assert "the error line" in str(excinfo.value)
+    assert not rundir.exists()  # failed run is cleaned up like the dispatch path
+
+
+def test_attached_slurm_get_returns_result_when_state_file_written(root, monkeypatch):
+    """Attached slurm run with a result file: get() returns the result and
+    cleans up the directory, without ever needing the cluster state."""
+    _stub_pyslurm_job(monkeypatch, state="COMPLETED", exit_code=0)
+    rundir, _ = _make_artifacts(root, State.FINISHED, result=7, backend="slurm", jobid=43)
+
+    attached = Runnable.from_run_dir(rundir)
+    assert attached.get(blocking=True) == 7
+    assert not rundir.exists()
+
+
 # --- acceptance (tasks 4.1/4.2) ---
 
 
