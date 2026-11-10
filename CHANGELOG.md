@@ -22,6 +22,11 @@
 
 ### Changed
 
+- Run artifact directories are named with `uuid4().hex` prefixed by the
+  dispatched function's name instead of a `joblib.hash` over the full
+  payload plus a timestamp, removing a redundant full serialization pass
+  per dispatch; uniqueness per run is guaranteed by construction
+  (issue #17).
 - **BREAKING**: `clustafari.paths` no longer exposes import-time constants
   `CLUSTAFARI_DIR`, `JOB_FILE`, `WORKERSTUB`; use the accessor functions
   `clustafari_dir()`, `job_file()`, `workerstub()` (plus `reset_path_cache()`

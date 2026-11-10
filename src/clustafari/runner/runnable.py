@@ -188,7 +188,7 @@ class Runnable:
             joblib.dump(function_data, self.tempfile)
             self._state = RunState.READY
         except Exception as err:  # noqa: BLE001
-            # A preparation failure (hashing, directory creation, or
+            # A preparation failure (directory creation, or
             # serialization) is not a job failure. Mark the run as failed so
             # callers report it through `get()` instead of leaking a raw
             # exception (e.g. `PicklingError`) out of `apply_async`.
