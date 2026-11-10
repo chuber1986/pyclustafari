@@ -5,7 +5,6 @@ runs in the artifacts root. `list_runs` discovers them, `attach` rebuilds a
 retrieval-capable handle, and `gc` removes terminal-run artifacts by age.
 """
 
-import json
 import logging
 import shutil
 import time
@@ -14,7 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from clustafari import paths
+from clustafari import paths, utils
 from clustafari.utils import State
 
 __all__ = ["GcResult", "RunDescriptor", "attach", "gc", "list_runs"]
@@ -52,6 +51,16 @@ class GcResult:
     remaining: int
 
 
+def _parse_jobid(raw: Any) -> int | None:
+    """Return the job id from advisory metadata, tolerantly (None when invalid)."""
+    if raw is None or isinstance(raw, bool):
+        return None
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return None
+
+
 def _run_dir_id(run_dir: Path) -> str:
     """Return the run id of a run directory: the directory's name."""
     return run_dir.name
@@ -70,12 +79,7 @@ def _dispatched_at(meta: dict[str, Any]) -> datetime | None:
 
 def read_meta(run_dir: Path) -> dict[str, Any]:
     """Read a run directory's metadata, tolerantly (empty dict on any failure)."""
-    try:
-        with (run_dir / _META_FILE).open("r") as f:
-            data = json.load(f)
-    except (OSError, ValueError):
-        return {}
-    return data if isinstance(data, dict) else {}
+    return utils._read_meta_path(run_dir / _META_FILE)  # noqa: SLF001
 
 
 def _iter_run_dirs(root: Path) -> list[Path]:
@@ -119,7 +123,7 @@ def list_runs(root: Path | str | None = None) -> list[RunDescriptor]:
                 function=meta.get("function") if isinstance(meta.get("function"), str) else None,
                 dispatched_at=_dispatched_at(meta),
                 backend=meta.get("backend") if isinstance(meta.get("backend"), str) else None,
-                jobid=int(jobid_raw) if jobid_raw is not None else None,
+                jobid=_parse_jobid(jobid_raw),
                 state=_read_worker_state(run_dir),
             )
         )
@@ -214,8 +218,8 @@ def _run_is_terminal(run_dir: Path, meta: dict[str, Any]) -> bool:
     if _read_worker_state(run_dir) in (State.FINISHED, State.FAILED):
         return True
 
-    jobid_raw = meta.get("jobid")
-    if jobid_raw is not None:
-        return _slurm_job_terminal(int(jobid_raw))
+    jobid = _parse_jobid(meta.get("jobid"))
+    if jobid is not None:
+        return _slurm_job_terminal(jobid)
 
     return False

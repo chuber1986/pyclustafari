@@ -84,6 +84,16 @@ def get_meta_file(file: Path) -> Path:
 _META_TMP_SUFFIX = ".meta-tmp"
 
 
+def _read_meta_path(meta_file: Path) -> dict[str, Any]:
+    """Read a meta.json path, tolerantly (empty dict on any failure)."""
+    try:
+        with meta_file.open("r") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
 def read_meta(file: Path) -> dict[str, Any]:
     """Read the run metadata for a given job file, tolerantly.
 
@@ -91,13 +101,7 @@ def read_meta(file: Path) -> dict[str, Any]:
     file is absent, unreadable, or corrupt — metadata is advisory for the
     run itself and must never break dispatch or retrieval.
     """
-    meta_file = get_meta_file(file)
-    try:
-        with meta_file.open("r") as f:
-            data = json.load(f)
-    except (OSError, ValueError):
-        return {}
-    return data if isinstance(data, dict) else {}
+    return _read_meta_path(get_meta_file(file))
 
 
 def write_meta(file: Path, meta: dict[str, Any]) -> None:
