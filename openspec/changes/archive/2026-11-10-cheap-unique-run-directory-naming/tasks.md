@@ -11,5 +11,5 @@
 
 ## 3. Validation
 
-- [ ] 3.1 Run the runner test module plus the full suite fast loop (`PYTHONPATH=src` against the parent venv) and confirm green.
-- [ ] 3.2 Run `uvx prek run --all-files` clean before push (needs synced worktree venv).
+- [x] 3.1 Run the runner test module plus the full suite fast loop (`PYTHONPATH=src` against the parent venv) and confirm green.
+- [x] 3.2 Run `uvx prek run --all-files` clean before push (needs synced worktree venv).
