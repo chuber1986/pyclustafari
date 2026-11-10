@@ -4,6 +4,16 @@
 
 ### Added
 
+- The artifacts root is configurable (issue #16): pass
+  `ClusterContext(config, artifacts_dir=...)` to override the root for all
+  runs dispatched through the context, or set the `CLUSTAFARI_ARTIFACT_DIR`
+  environment variable (read lazily when the artifacts root is first
+  resolved). Precedence: explicit argument → environment variable → default
+  `~/.clustafari` (unchanged). Useful for pointing large-payload artifact
+  I/O at a scratch filesystem instead of a small NFS-mounted home; note
+  node-local scratch only suits the Subprocess backend, while the Slurm
+  backend requires a root visible to both caller and worker (shared
+  scratch/parallel filesystem).
 - `clustafari.job` ships as package data (`clustafari/job/clustafari.job`):
   a pip-installed package is self-contained and resolves the job script from
   the installed distribution. The lazy resolver falls back to the repository

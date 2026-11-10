@@ -177,6 +177,24 @@ with ClusterContext(cfg) as ctx:
     res = ctx.apply(function, "param1")
 ```
 
+### Artifact directory
+
+Run artifacts are stored under `~/.clustafari` by default. To redirect them,
+pass an explicit directory (highest precedence) or set the
+`CLUSTAFARI_ARTIFACT_DIR` environment variable (read when the artifacts root
+is first resolved):
+
+```python
+with ClusterContext(SlurmConfig(), artifacts_dir="/scratch/myuser/run") as ctx:
+    res = ctx.apply(function, "param1")
+```
+
+On clusters, prefer a scratch filesystem over the (often NFS-mounted, small,
+backed-up) home directory. Node-local scratch only suits the Subprocess
+backend (the worker runs on the caller's machine); the Slurm backend needs a
+directory visible to both caller and worker — use a shared scratch/parallel
+filesystem with absolute paths.
+
 For more detail see [DemoNotebook](./notebooks/demo.ipynb)
 
 ## Contact
