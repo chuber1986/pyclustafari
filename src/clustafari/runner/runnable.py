@@ -51,6 +51,7 @@ class Runnable:
         fn: Callable,
         *args: Any,
         return_object: bool = False,
+        artifacts_dir: Path | str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Runnable with callable function and arguments."""
@@ -64,6 +65,7 @@ class Runnable:
         self.kwargs: Mapping = kwargs
 
         self.return_object = return_object
+        self._artifacts_dir = artifacts_dir
 
         self._timestamp: int = time.monotonic_ns()
         self.tempdir: Path | None = None
@@ -168,7 +170,7 @@ class Runnable:
         try:
             function_data = (self.function, self.args, self.kwargs)
 
-            self.tempdir = paths.clustafari_dir() / f"{self._get_hash()}"
+            self.tempdir = paths.artifacts_root(self._artifacts_dir) / f"{self._get_hash()}"
             self.tempdir.mkdir(exist_ok=True)
 
             self.tempfile = self.tempdir / f"{_get_function_name(self.function)}.joblib"

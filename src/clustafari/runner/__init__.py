@@ -4,6 +4,7 @@ import abc
 import logging
 from collections.abc import Callable, Iterable, Mapping
 from functools import partial
+from pathlib import Path
 from typing import Any
 
 from .info import RunInformation
@@ -22,13 +23,22 @@ class BaseRunner(abc.ABC):
         logger.debug("Call 'apply'")
         return self.apply_async(fn, *args, return_object=return_object, **kwargs).get(blocking=True)
 
-    def apply_async(self, fn: Callable, /, *args: Any, return_object: bool = False, **kwargs: Any) -> Runnable:
+    def apply_async(
+        self,
+        fn: Callable,
+        /,
+        *args: Any,
+        return_object: bool = False,
+        artifacts_dir: Path | str | None = None,
+        **kwargs: Any,
+    ) -> Runnable:
         """Create delayed asynchronous execution of a function and do NOT wait for the result."""
         logger.debug("Call 'apply_async'")
         runobj = Runnable(
             fn,
             *args,
             return_object=return_object,
+            artifacts_dir=artifacts_dir,
             **kwargs,
         )
 
@@ -55,6 +65,7 @@ class BaseRunner(abc.ABC):
         args: Iterable[Iterable] | None = None,
         kwargs: Iterable[Mapping] | None = None,
         return_object: bool = False,  # noqa: FBT001, FBT002
+        artifacts_dir: Path | str | None = None,
         **fixed_kwargs: Any,
     ) -> list[Runnable]:
         """Apply function to a list of arguments and do NOT wait for the results."""
@@ -73,7 +84,9 @@ class BaseRunner(abc.ABC):
         for i in range(n):
             a = iargs[i] if iargs else ()
             kwa = ikwargs[i] if ikwargs else {}
-            runners.append(self.apply_async(partial_fn, *a, return_object=return_object, **kwa))
+            runners.append(
+                self.apply_async(partial_fn, *a, return_object=return_object, artifacts_dir=artifacts_dir, **kwa)
+            )
         return runners
 
     @abc.abstractmethod
