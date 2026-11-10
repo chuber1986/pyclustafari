@@ -6,18 +6,20 @@ import shutil
 import struct
 import time
 from collections.abc import Callable, Iterable, Mapping
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
 import joblib
 
-from clustafari import paths
+from clustafari import paths, utils
 from clustafari.exceptions import CancelledError, RunnableStateError, StateError, TimeoutException
 from clustafari.utils import (
     State,
     get_error_file,
     get_log_file,
+    get_meta_file,
     get_output_file,
     get_result_file,
     get_state_file,
@@ -75,6 +77,15 @@ class Runnable:
         self.errorfile: Path | None = None
         self.logfile: Path | None = None
         self.statefile: Path | None = None
+        self.metafile: Path | None = None
+
+        #: Kind of the dispatching backend, recorded in the run's metadata.
+        #: Set by the runner before dispatch; "unknown" only ever survives on
+        #: handles rebuilt by `attach` when no metadata was recorded.
+        self.backend: str = "unknown"
+
+        #: True on handles rebuilt by `Runnable.from_run_dir` (attach path).
+        self._attached: bool = False
 
         logger.info("Create Runnable: %s", self.get_function_name())
 
@@ -194,6 +205,20 @@ class Runnable:
             # exception (e.g. `PicklingError`) out of `apply_async`.
             logger.debug("Prepare Runnable '%s' failed", self.get_function_name(), exc_info=True)
             self.fail(str(err))
+            return
+
+        # Advisory dispatch metadata for cross-session recovery
+        # (`list_runs`/`attach`): function name, dispatch time, backend kind.
+        # Written best-effort — a failing write must not fail the dispatch.
+        self.metafile = get_meta_file(self.tempfile)
+        utils.write_meta(
+            self.tempfile,
+            {
+                "function": self.get_function_name(),
+                "dispatched_at": datetime.now(UTC).isoformat(),
+                "backend": self.backend,
+            },
+        )
 
     def _run_dir_name(self) -> str:
         """Return a unique per-run artifact directory name.
@@ -366,14 +391,97 @@ class Runnable:
 
     def get_function_name(self) -> str:
         """Return the name of the wrapped function."""
-        return _get_function_name(self.function)
+        return self.name
+
+    @property
+    def name(self) -> str:
+        """Return the dispatched function's name without unpickling anything.
+
+        Prefers the dispatch metadata (`meta.json`, advisory); falls back to
+        the pickled function object. Handles rebuilt by `attach` may carry no
+        metadata and no function — they report the run id then.
+        """
+        meta = utils.read_meta(self.tempfile) if self.tempfile is not None else {}
+        fn_name = meta.get("function")
+        if isinstance(fn_name, str) and fn_name:
+            return fn_name
+        try:
+            return _get_function_name(self.function)
+        except (AssertionError, AttributeError):
+            # No usable function object (e.g. an attached handle without
+            # metadata): identify the run by its directory name instead.
+            return self.tempdir.name if self.tempdir is not None else "<unknown>"
+
+    @classmethod
+    def from_run_dir(cls, run_dir: Path) -> "Runnable":
+        """Rebuild a retrieval-capable handle from an existing run directory.
+
+        The reconstruction path behind `clustafari.attach()`: state is
+        READY (dispatched, awaiting retrieval), protocol file paths derive
+        from the run directory and the surviving `*.joblib` stem, and the
+        information object is rebuilt from the recorded job id (cluster-side
+        death detection + best-effort cancellation) when present.
+
+        Does not touch the job file: retrieval never needs the pickled
+        function or arguments.
+        """
+        jobfiles = list(run_dir.glob("*.joblib"))
+        if len(jobfiles) != 1:
+            msg = f"Expected exactly one job file in run directory {run_dir}, found {len(jobfiles)}."
+            raise ValueError(msg)
+        jobfile = jobfiles[0]
+
+        runobj = cls.__new__(cls)
+        runobj._state = RunState.READY  # noqa: SLF001
+        runobj._info = RunInformation()  # noqa: SLF001
+        runobj._result = None  # noqa: SLF001
+        runobj._object = None  # noqa: SLF001
+
+        runobj.function = None  # type: ignore[assignment]
+        runobj.args: Iterable = ()
+        runobj.kwargs: Mapping = {}
+        runobj.return_object = False
+        runobj.tempdir = run_dir
+        runobj.tempfile = jobfile
+        runobj.resultfile = get_result_file(jobfile)
+        runobj.outputfile = get_output_file(jobfile)
+        runobj.errorfile = get_error_file(jobfile)
+        runobj.logfile = get_log_file(jobfile)
+        runobj.statefile = get_state_file(jobfile)
+        runobj.metafile = get_meta_file(jobfile)
+
+        meta = utils.read_meta(jobfile)
+        runobj.backend = str(meta.get("backend", "unknown"))
+
+        jobid = meta.get("jobid")
+        if jobid is not None:
+            # Lazy import: `slurm.info` imports `clustafari.config`, which
+            # would close an import cycle at module import time.
+            from clustafari.runner.slurm.info import AttachedSlurmInformation
+
+            runobj._info = AttachedSlurmInformation(int(jobid))  # noqa: SLF001
+
+        runobj._attached = True  # noqa: SLF001
+
+        return runobj
 
     def __del__(self) -> None:
-        del self._info
+        info = self.__dict__.pop("_info", None)
+        if info is not None and getattr(self, "_attached", False):
+            # An attached handle owns nothing: dropping it without `get()`
+            # must not destroy the recovered artifacts. The info object's
+            # `__del__` would unlink the run's stdout/stderr files, and the
+            # GC backstop below would remove the whole directory — both are
+            # meant for directories this session's dispatch created. For
+            # runs attached from a dead session, `gc()` is the explicit
+            # cleanup path instead.
+            info.__dict__.pop("out_file", None)
+            info.__dict__.pop("err_file", None)
+            return
         self._delete_temp_files()
 
     def __repr__(self) -> str:
-        fn_name = _get_function_name(self.function)
+        fn_name = self.name
         pargs, pkwargs = _get_partial_arguments(self.function)
 
         a = [str(arg) for arg in list(pargs) + list(self.args)]

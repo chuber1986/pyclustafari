@@ -21,6 +21,8 @@ __all__ = ["SubprocessRunner"]
 class SubprocessRunner(BaseRunner):
     """Runs a JobLib file in a new Python instance."""
 
+    kind = "subprocess"
+
     def __init__(self, config: _SubprocessConfig) -> None:
         """Initialize Subprocess Runner with configuration."""
         super().__init__()

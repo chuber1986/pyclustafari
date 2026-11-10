@@ -4,6 +4,7 @@ from joblib import wrap_non_picklable_objects
 
 from clustafari.annotations import delayed
 from clustafari.manager import ClusterContext
+from clustafari.registry import GcResult, attach, gc, list_runs
 from clustafari.runner.dummy import DummyConfig, DummyRunner
 from clustafari.runner.slurm import SlurmConfig, SlurmRunner
 from clustafari.runner.subprocess import SubprocessConfig, SubprocessRunner
@@ -12,11 +13,15 @@ __all__ = [
     "ClusterContext",
     "DummyConfig",
     "DummyRunner",
+    "GcResult",
     "SlurmConfig",
     "SlurmRunner",
     "SubprocessConfig",
     "SubprocessRunner",
+    "attach",
     "delayed",
+    "gc",
+    "list_runs",
     "wrap_non_picklable_objects",
 ]
 

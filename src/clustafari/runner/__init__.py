@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 class BaseRunner(abc.ABC):
     """Base class for cluster specific Runners."""
 
+    #: Kind name recorded in each run's dispatch metadata; subclasses override.
+    kind = "unknown"
+
     def apply(self, fn: Callable, /, *args: Any, return_object: bool = False, **kwargs: Any) -> Any:
         """Create delayed execution of a function and wait for the result."""
         logger.debug("Call 'apply'")
@@ -43,6 +46,7 @@ class BaseRunner(abc.ABC):
         )
 
         logger.info("Execute '%s' with %s", runobj.get_function_name(), self.__class__.__name__)
+        runobj.backend = self.kind
         self._run(runobj)
         return runobj
 

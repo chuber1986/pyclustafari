@@ -12,9 +12,10 @@ import pytest
 
 from clustafari import ClusterContext, DummyConfig, paths
 
-# Caller-side prep writes the pickled job file; the Subprocess worker adds
-# the state/out/err/log/res files under the same stem (StateUtils + result).
-DUMMY_FILES = {"fn1.joblib"}
+# Caller-side prep writes the pickled job file plus the advisory dispatch
+# metadata; the Subprocess worker adds the state/out/err/log/res files under
+# the same stem (StateUtils + result).
+DUMMY_FILES = {"fn1.joblib", "meta.json"}
 
 
 def fn1(a):

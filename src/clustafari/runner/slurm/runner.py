@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import override
 
+from clustafari import utils as _meta_utils
 from clustafari.runner import BaseRunner, Runnable
 from clustafari.runner.state import RunState
 from clustafari.utils import get_error_file, get_output_file
@@ -20,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 class SlurmRunner(BaseRunner):
     """Runs a JobLib file on a Slurm cluster."""
+
+    kind = "slurm"
 
     def __init__(self, config: _SlurmConfig) -> None:
         """Initialize Slurm Runner with configuration."""
@@ -61,5 +64,9 @@ class SlurmRunner(BaseRunner):
         except Exception as e:  # noqa: BLE001
             runobj.fail(str(e))
             return
+
+        # Persist the job id for cross-session recovery (`attach` needs it
+        # for cluster-side death detection; `gc` for terminal checks).
+        _meta_utils.write_meta(file, {"jobid": jobid})
 
         runobj.info = SlurmInformation(jobid)

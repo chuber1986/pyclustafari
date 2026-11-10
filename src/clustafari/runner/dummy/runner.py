@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 class DummyRunner(BaseRunner):
     """Runs a JobLib file in the current Python process."""
 
+    kind = "dummy"
+
     @override
     def _run(self, runobj: Runnable) -> None:
         logger.info("Execute Runner '%s'", self.__class__.__name__)

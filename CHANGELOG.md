@@ -4,6 +4,16 @@
 
 ### Added
 
+- Cross-session run recovery and artifact GC (issue #18): `list_runs()`
+  discovers runs under the artifacts root, `attach(run_id)` rebuilds a
+  retrieval-capable handle for a run of a dead session
+  (`attach(...).get(blocking=True)` returns the result or raises with the
+  run's diagnostics), and `gc(max_age)` removes artifact directories of
+  terminal runs older than `max_age` (`max_age=0` clears all terminal runs;
+  live runs are never removed). Each run now records a small advisory
+  `meta.json` (function name, UTC dispatch time, backend kind; the Slurm
+  backend adds the submitted job id) — dispatch metadata only, never
+  load-bearing for a run's execution.
 - The artifacts root is configurable (issue #16): pass
   `ClusterContext(config, artifacts_dir=...)` to override the root for all
   runs dispatched through the context, or set the `CLUSTAFARI_ARTIFACT_DIR`
