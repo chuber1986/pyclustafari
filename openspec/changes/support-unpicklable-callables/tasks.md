@@ -27,5 +27,5 @@
 
 - [x] 4.1 Full non-Slurm suite green serially: `uv run pytest tests -k "not slurm"` — 374 passed, 31 deselected (baseline 364: +11 regression tests, −1 removed implementation-pinned monkeypatch test).
 - [x] 4.2 `uvx ty check --python .venv` error-set comparison vs baseline (no new errors — 129 == 129, empty diff).
-- [ ] 4.3 `uvx prek run --all-files` gate clean (includes pytest with coverage); commit mdformat auto-fixes if any.
-- [ ] 4.4 Conventional commit(s) with `(issue #31)` suffix; push; open PR with `Closes #31`; verify CI check-runs on the pushed SHA.
+- [x] 4.3 `uvx prek run --all-files` gate clean — all 17 hooks Passed on the final tree (pytest: 405 passed, 96% coverage, `serialization.py` 100%); mdformat auto-fix on `docs/usage.md` applied via the gate's own hook.
+- [x] 4.4 Conventional commits with `(issue #31)` suffix; push; open PR with `Closes #31`; verify CI check-runs on the pushed SHA.
