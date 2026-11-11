@@ -15,8 +15,7 @@ import name (`clustafari`), i.e. `pip install pyclustafari` provides
 - **WHEN** a reader opens the README installation section or
   `docs/installation.md`
 - **THEN** both show `pip install pyclustafari` (or the uv equivalent) as
-  the way to install, and both state the `pyclustafari` → `import
-  clustafari` name mapping
+  the way to install, and both state the `pyclustafari` → `import clustafari` name mapping
 
 #### Scenario: Source-install route remains documented
 

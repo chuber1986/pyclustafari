@@ -20,12 +20,14 @@ override into the artifacts. See Risks.
 ## Goals / Non-Goals
 
 Goals:
+
 - Valid, PyPI-presentable metadata (classifiers).
 - One-command maintainer release: push tag → built and published
   wheel+sdist, gated on CI checks.
 - Correct, prominent docs for the name mapping and the PyPI install route.
 
 Non-Goals:
+
 - Signing (Sigstore attestation is produced by the publish action by
   default; no extra key management).
 - Version automation (no release-please/dynamic versioning; the version in
@@ -99,7 +101,7 @@ flow can be used instead. No `PYPI_API_TOKEN` secret is stored.
 `uv build` in CI without `--locked`... Chosen: plain `uv build` in a
 checkout that does NOT run `uv sync` first. `uv build` builds an isolated
 environment for the backend; `[tool.uv.sources]` (the submodule pin) is a
- uv-workspace/lock concept that `uv build`'s PEP 517 path ignores for
+uv-workspace/lock concept that `uv build`'s PEP 517 path ignores for
 metadata generation — `pyslurm` stays an ordinary PyPI dependency in the
 published metadata. Verified in this change's verification step by
 inspecting the built wheel's `METADATA` (Requires-Dist: pyslurm, no
@@ -123,8 +125,7 @@ The issue's acceptance (`pip install pyclustafari`) and every existing
 badge/docs reference require the **distribution** to be `pyclustafari`;
 `pyproject.toml` previously named the project `clustafari`, which would
 have published the wrong PyPI project name. `uv_build` supports a
-distribution/import-name split via `[tool.uv.build-backend] module-name =
-"clustafari"`. Consequences handled in this change: `uv.lock` regenerated
+distribution/import-name split via `[tool.uv.build-backend] module-name = "clustafari"`. Consequences handled in this change: `uv.lock` regenerated
 (top-level package becomes `pyclustafari`), the wheel RECORD still ships
 the `clustafari/` module, sdist top-level dir becomes
 `pyclustafari-0.1.0/`. Alternatives: keep `clustafari` as the
