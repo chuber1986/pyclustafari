@@ -5,8 +5,7 @@ import pathlib
 from pathlib import Path
 from typing import Any
 
-import joblib
-
+from clustafari import serialization
 from clustafari.utils import (
     State,
     get_error_file,
@@ -32,10 +31,10 @@ def _atomic_write_text(path: Path, text: str) -> None:
 
 
 def _atomic_dump(obj: Any, path: Path) -> None:
-    """Dump a joblib payload to path atomically."""
+    """Dump a serialized payload to path atomically."""
     tmp = path.with_suffix(path.suffix + ".tmp")
     try:
-        joblib.dump(obj, tmp)
+        serialization.dump(obj, tmp)
     except BaseException:
         tmp.unlink(missing_ok=True)
         raise
@@ -85,7 +84,7 @@ def execute(arguments: Any) -> None:
     try:
         utils.log("Load job file")
         utils.set_state(State.LOAD_FILE)
-        fn, args, kwargs = joblib.load(file)
+        fn, args, kwargs = serialization.load(file)
         if hasattr(fn, "__self__"):
             fnobj = fn.__self__
 

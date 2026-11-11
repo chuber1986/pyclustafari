@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- By-value callable serialization (issue #31): `apply`/`apply_async`/`map*`
+  now accept callables that stdlib pickle cannot serialize by reference —
+  lambdas, nested `def`s, `functools.partial` of either, and module-level
+  `def`s defined in the dispatching `__main__` driver script (the worker
+  subprocess has a different `__main__`). Job and result artifacts are
+  serialized with `dill` (recursion into referenced globals enabled), owned
+  by a single serializer module (`clustafari.serialization`) imported by
+  both the dispatching side and the worker. `wrap_non_picklable_objects`
+  remains available but is no longer required for such callables. Legacy
+  stdlib-pickle/joblib artifact streams still load (the dill unpickler is a
+  superset); artifact files keep the `.joblib` suffix and on-disk layout.
+
 ## 0.2.0 (2026-11-11)
 
 ### Added

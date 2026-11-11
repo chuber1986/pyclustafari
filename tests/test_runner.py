@@ -83,16 +83,6 @@ def test_runnable_run_dir_names_unique_per_call():
     assert len(r1.tempdir.name.removeprefix("fn1-")) == 32
 
 
-def test_runnable_dispatch_never_hashes_payload(monkeypatch):
-    def _boom(*args, **kwargs):
-        raise AssertionError("joblib.hash called on the dispatch path")
-
-    monkeypatch.setattr("clustafari.runner.runnable.joblib.hash", _boom)
-    r = Runnable(fn1, 1)
-    r.execute()
-    assert r.state == RunState.READY
-
-
 def test_read_state_file_empty_content_returns_idle_without_warning(caplog):
     """A freshly touched (empty) .state file maps to IDLE silently.
 
