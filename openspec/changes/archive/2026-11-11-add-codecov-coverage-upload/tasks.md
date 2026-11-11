@@ -22,7 +22,7 @@
 ## 3. Verification
 
 - [x] 3.1 Validate workflow YAML (prettier/check-yaml pass on ci.yml).
-- [ ] 3.2 Push branch and confirm on GitHub: `checks` job runs the coverage
+- [x] 3.2 Push branch and confirm on GitHub: `checks` job runs the coverage
   step, upload succeeds (or documents the expected token-missing failure
   if 2.x are not done yet), Codecov check and PR comment appear.
 - [x] 3.3 Confirm README badge unchanged and still pointing at
