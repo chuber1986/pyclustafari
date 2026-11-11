@@ -1,16 +1,12 @@
 # PyClustafari
 
-<!-- [![pypi](https://img.shields.io/pypi/v/pyclustafari.svg)](https://pypi.org/project/pyclustafari/) -->
+[![pypi](https://img.shields.io/pypi/v/pyclustafari.svg)](https://pypi.org/project/pyclustafari/)
 
-<!-- [![python](https://img.shields.io/pypi/pyversions/pyclustafari.svg)](https://pypi.org/project/pyclustafari/) -->
+[![python](https://img.shields.io/pypi/pyversions/pyclustafari.svg)](https://pypi.org/project/pyclustafari/)
 
-<!-- [![Build Status](https://github.com/chuber1986/pyclustafari/actions/workflows/dev.yml/badge.svg)](https://github.com/chuber1986/pyclustafari/actions/workflows/dev.yml) -->
+[![Build Status](https://github.com/chuber1986/pyclustafari/actions/workflows/ci.yml/badge.svg)](https://github.com/chuber1986/pyclustafari/actions/workflows/ci.yml)
 
-<!-- [![codecov](https://codecov.io/gh/chuber1986/pyclustafari/branch/main/graphs/badge.svg)](https://codecov.io/git/chuber1986/pyclustafari) -->
-
-<!--  -->
-
-<!-- [Project](https://sites.google.com/) **|** [Paper](https://aip.scitation.org/doi/full/10.1063/5.0020404/) -->
+[![codecov](https://codecov.io/gh/chuber1986/pyclustafari/branch/main/graphs/badge.svg)](https://codecov.io/gh/chuber1986/pyclustafari)
 
 [Christian Huber](https://www.researchgate.net/profile/Christian-Huber-21)
 
@@ -52,6 +48,29 @@ The function, parameters and context data are serialized and stored on a shared 
 ## Getting started
 
 <a name="getting-started"></a>
+
+**Name mapping:** the PyPI/distribution name is `pyclustafari`, the Python
+package you import is `clustafari` — install one name, import the other.
+
+Install from PyPI:
+
+```bash
+$ pip install pyclustafari
+```
+
+or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+$ uv pip install pyclustafari
+```
+
+The `Slurm` runner requires PySlurm, whose version must match the cluster's
+Slurm version (see [Requirements](#requirements-and-dependencies) and
+[Installation](docs/installation.md)).
+
+### Install from source
+
+Needed to build the vendored PySlurm against your cluster's Slurm version.
 Download repository:
 
 ```bash

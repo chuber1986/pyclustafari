@@ -2,14 +2,18 @@
 
 ## Context
 
-`pyproject.toml` uses `uv_build` with `src/clustafari` layout; the
-distribution name is `pyclustafari`, the import package `clustafari`. CI
+`pyproject.toml` uses `uv_build` with the `src/clustafari` layout. The
+distribution name was `clustafari` while the repository, README, and docs
+all refer to the project as `pyclustafari`; publishing makes the
+distribution name user-facing, so the distribution is renamed to
+`pyclustafari` with `tool.uv.build-backend.module-name = "clustafari"`
+keeping the import package unchanged (uv_build supports exactly this
+split; see D7). CI
 (`ci.yml`) exposes a `checks` job (the prek gate: lint, ty, pytest) and a
 `docs` job. The pyslurm dependency is a vendored submodule built against
 Slurm 26.05 headers — wheels must not embed it; it stays a normal
-dependency resolved at install time from the sdist/wheel metadata? No:
-`pyslurm` is listed in `[project.dependencies]` and, via
-`[tool.uv.sources]`, pinned to the submodule path for **development**
+dependency in the published metadata, while `[tool.uv.sources]` pins it to
+the submodule path for **development**
 installs. Builds for publishing must not carry that dev-only source
 override into the artifacts. See Risks.
 
@@ -112,6 +116,20 @@ and codecov badge (repo may not have codecov wired; the badge then shows
 "unknown" — acceptable, and it lights up if codecov is added later; the
 issue explicitly asks for it). The "Project | Paper" line with dead
 template links is removed rather than uncommented.
+
+### D7: Rename the distribution to `pyclustafari`, keep the import package `clustafari`
+
+The issue's acceptance (`pip install pyclustafari`) and every existing
+badge/docs reference require the **distribution** to be `pyclustafari`;
+`pyproject.toml` previously named the project `clustafari`, which would
+have published the wrong PyPI project name. `uv_build` supports a
+distribution/import-name split via `[tool.uv.build-backend] module-name =
+"clustafari"`. Consequences handled in this change: `uv.lock` regenerated
+(top-level package becomes `pyclustafari`), the wheel RECORD still ships
+the `clustafari/` module, sdist top-level dir becomes
+`pyclustafari-0.1.0/`. Alternatives: keep `clustafari` as the
+distribution (contradicts the issue), or rename the import package too
+(breaking, out of scope).
 
 ## Risks / Trade-offs
 

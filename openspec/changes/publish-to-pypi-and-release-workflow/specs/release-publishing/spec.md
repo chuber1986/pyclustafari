@@ -9,6 +9,19 @@ job, so users can install from PyPI without git access.
 
 ## ADDED Requirements
 
+### Requirement: Distribution name maps to the clustafari import package
+
+The published distribution MUST be named `pyclustafari` while providing the
+import package `clustafari`, so `pip install pyclustafari` makes
+`import clustafari` work; the built wheel/sdist metadata MUST carry the
+`pyclustafari` name.
+
+#### Scenario: Wheel metadata names the distribution pyclustafari
+
+- **WHEN** the built wheel's `METADATA` is inspected
+- **THEN** `Name: pyclustafari` and `Requires-Dist: pyslurm` (an ordinary
+  PyPI dependency, no direct-URL/submodule reference) are present
+
 ### Requirement: Distribution metadata declares Python versions, license, and platform
 
 The distribution metadata (`pyproject.toml` classifiers) MUST declare the
