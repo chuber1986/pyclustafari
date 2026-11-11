@@ -11,9 +11,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-import joblib
-
-from clustafari import paths, utils
+from clustafari import paths, serialization, utils
 from clustafari.exceptions import CancelledError, RunnableStateError, StateError, TimeoutException
 from clustafari.utils import (
     State,
@@ -196,7 +194,7 @@ class Runnable:
                 self.get_function_name(),
                 str(self.tempfile),
             )
-            joblib.dump(function_data, self.tempfile)
+            serialization.dump(function_data, self.tempfile)
             self._state = RunState.READY
         except Exception as err:  # noqa: BLE001
             # A preparation failure (directory creation, or
@@ -293,7 +291,7 @@ class Runnable:
             return None, None
 
         try:
-            return joblib.load(file)
+            return serialization.load(file)
         except (EOFError, struct.error, OSError, ValueError, pickle.UnpicklingError) as exc:
             # The result file is written by the worker (possibly over NFS) and
             # can be truncated or corrupted mid-read (a torn pickle raises

@@ -22,6 +22,23 @@ with ClusterContext(cfg) as ctx:
     res = ctx.apply(custom_fn, 123)
 ```
 
+### Callables that pickle cannot serialize by reference
+
+Dispatch transports functions by value (dill), so lambdas, nested `def`s,
+`functools.partial` of either, and module-level `def`s defined in your
+`__main__` driver script work out of the box — including capturing
+script-level globals:
+
+```python
+with ClusterContext(SubprocessConfig()) as ctx:
+    res = ctx.apply(lambda x: x * 2, 21)  # 42
+```
+
+`wrap_non_picklable_objects` remains supported but is no longer needed for
+these cases. Note that by-value transport embeds the referenced code (and,
+with recursion enabled, captured globals) in the artifact, which grows the
+artifact size accordingly.
+
 ## Artifact directory
 
 Run artifacts (the pickled function, the result, captured output, and the
