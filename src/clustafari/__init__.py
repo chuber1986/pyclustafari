@@ -27,6 +27,6 @@ __all__ = [
 
 __author__ = """Christian Huber"""
 __email__ = "hiddenaddress@gmail.com"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __license__ = "MIT"
 __copyright__ = f"Copyright © 2024, {__author__}. All rights reserved."

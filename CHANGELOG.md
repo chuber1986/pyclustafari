@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 (2026-11-11)
 
 ### Added
 
@@ -14,6 +14,7 @@
   `meta.json` (function name, UTC dispatch time, backend kind; the Slurm
   backend adds the submitted job id) — dispatch metadata only, never
   load-bearing for a run's execution.
+
 - The artifacts root is configurable (issue #16): pass
   `ClusterContext(config, artifacts_dir=...)` to override the root for all
   runs dispatched through the context, or set the `CLUSTAFARI_ARTIFACT_DIR`
@@ -24,11 +25,19 @@
   node-local scratch only suits the Subprocess backend, while the Slurm
   backend requires a root visible to both caller and worker (shared
   scratch/parallel filesystem).
+
 - `clustafari.job` ships as package data (`clustafari/job/clustafari.job`):
   a pip-installed package is self-contained and resolves the job script from
   the installed distribution. The lazy resolver falls back to the repository
   checkout copy and then to an executable `clustafari.job` on `PATH`
   (issue #15).
+
+- Run handles expose the worker-side progress: `run.status` returns a
+  `RunStatus` (`NOT_STARTED`, `PENDING`, `STARTED`, `LOADING`, `RUNNING`,
+  `DUMPING`, `FINISHED`, `FAILED`, `CANCELLED`) derived from the run's state
+  file (issue #11). `str(run)` includes the current status and — for a
+  Slurm-backed run — the job ID (`"fn1(1) [running, job 12345]"`), so
+  `squeue`/`scancel` copy-paste works; `repr(run)` is unchanged.
 
 ### Changed
 
@@ -50,15 +59,6 @@
   is removed; `scripts/clustafari.job` moved into the package as
   `src/clustafari/job/clustafari.job` (the dev `scripts/extract_slurm_env.sh`
   stays) (issue #15).
-
-### Added
-
-- Run handles expose the worker-side progress: `run.status` returns a
-  `RunStatus` (`NOT_STARTED`, `PENDING`, `STARTED`, `LOADING`, `RUNNING`,
-  `DUMPING`, `FINISHED`, `FAILED`, `CANCELLED`) derived from the run's state
-  file (issue #11). `str(run)` includes the current status and — for a
-  Slurm-backed run — the job ID (`"fn1(1) [running, job 12345]"`), so
-  `squeue`/`scancel` copy-paste works; `repr(run)` is unchanged.
 
 ### Fixed
 
