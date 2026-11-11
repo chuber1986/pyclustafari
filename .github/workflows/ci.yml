@@ -17,6 +17,9 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Callable so release.yml can gate the publish on the same `checks` job
+  # for the tag/release ref; no secrets are used here.
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}

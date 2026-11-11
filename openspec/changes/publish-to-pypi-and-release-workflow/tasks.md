@@ -3,6 +3,7 @@
 ## 1. Packaging metadata
 
 - [ ] 1.1 Add trove classifiers to `pyproject.toml` (Python 3.12/3.13/3.14, MIT license, POSIX :: Linux, Science/Research audience, Distributed Computing topic)
+- [ ] 1.2 Rename distribution to `pyclustafari` with `tool.uv.build-backend.module-name = "clustafari"`; regenerate `uv.lock`
 
 ## 2. Release workflow
 

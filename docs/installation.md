@@ -1,7 +1,28 @@
 # Installation
 
-`pyclustafari` installs the `clustafari` package. It is developed with
-[uv](https://docs.astral.sh/uv/); use Python **3.12+**.
+**Name mapping:** the distribution name is `pyclustafari`, the package you
+import is `clustafari`:
+
+```console
+$ pip install pyclustafari
+$ python -c "import clustafari; print(clustafari.__name__)"
+clustafari
+```
+
+or with [uv](https://docs.astral.sh/uv/):
+
+```console
+$ uv pip install pyclustafari
+```
+
+## From source
+
+`pyclustafari` is developed with [uv](https://docs.astral.sh/uv/); use
+Python **3.12+**. Building from source is needed when PySlurm must be
+compiled against your cluster's Slurm version.
+
+Clone the repository (with the PySlurm submodule) and create the
+environment:
 
 ```console
 $ git clone --recurse-submodules https://github.com/chuber1986/pyclustafari

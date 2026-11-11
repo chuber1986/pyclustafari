@@ -11,6 +11,9 @@ and CI badges are commented out pending a real release.
 
 ## What Changes
 
+- **BREAKING (packaging only)**: rename the distribution from
+  `clustafari` to `pyclustafari` (`tool.uv.build-backend.module-name`
+  keeps the import package `clustafari`); `uv.lock` regenerated.
 - Add trove classifiers to `pyproject.toml`: Python 3.12/3.13/3.14 versions,
   MIT license, POSIX/Linux OS, `Intended Audience :: Science/Research`,
   `Topic :: System :: Distributed Computing`.

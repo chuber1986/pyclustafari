@@ -1,5 +1,7 @@
 [project]
-name = "clustafari"
+# PyPI/distribution name; the import package stays `clustafari`
+# (module-name below), see README "Name mapping".
+name = "pyclustafari"
 version = "0.1.0"
 description = "Runs Python function on a cluster."
 readme = { file = "README.md", content-type = "text/markdown" }
@@ -13,7 +15,15 @@ maintainers = [
 keywords = ["execution", "cluster", "slurm", "interactive"]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "Programming Language :: Python"
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: System :: Distributed Computing",
 ]
 requires-python = ">=3.12"
 dependencies = [
@@ -64,6 +74,10 @@ pyslurm = { path = "third-party/pyslurm" }
 [build-system]
 requires = ["uv_build>=0.9.24,<0.10.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# Distribution `pyclustafari` provides the `clustafari` module (src/clustafari).
+module-name = "clustafari"
 
 [tool.ruff.lint]
 select = ["ALL"]
